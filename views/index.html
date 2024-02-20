@@ -2,14 +2,31 @@
 
 <html>
 
+<head>
+    <meta charset="UTF-8">
+    <title>ROS Web Display</title>
+    <link rel=stylesheet href="style/style.css">
+</head>
+
 <body>
     <h1>Helloooooo</h1>
-    <canvas id="canvas" width="400" height="400" >
+    <canvas id="canvas" width="400" height="400">
     </canvas>
 
     <p id="broga">this is some text</p>
     <button onclick="brogaButton()">broga man</button>
+    <fieldset class="command">
+        <legend>Generate Maze</legend>
+        <p class="command_key">Width: </p>
+        <input id="mazeWidth" class="command_input" type="number">
+        <p class="command_key">Height: </p>
+        <input id="mazeHeight" class="command_input" type="number">
+        <button onclick="generateMaze()" class="command_button">Generate</button>
+
+    </fieldset>
+
     <script src="scripts/mainscript.js"></script>
+
 </body>
 
 </html>
