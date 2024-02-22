@@ -97,6 +97,10 @@ class PriorityQueue {
         isEmpty() {
             return this.heap.length === 0;
         }
+
+        contains(node) {
+            return this.heap.some(n => n.x === node.x && n.y === node.y);
+        }
     }
 
     // size() {
@@ -178,8 +182,8 @@ function getNeighbors(currentNode, map) {
     let validDirections = [];
     for(let d = 0; d < directions.length; d++) {
         let dir = directions[d];
-        let neighX = currentNode.getX + dir[0];
-        let neighY = currentNode.getY + dir[1];
+        let neighX = currentNode.x + dir[0];
+        let neighY = currentNode.y + dir[1];
         if(neighX >= 0 && neighY >= 0 && neighX < map.length && neighY < map[0].length && map[neighX][neighY] === 0) { //check if its valid space in maze
             validDirections.push(new Node(neighX, neighY));
         }
@@ -189,7 +193,7 @@ function getNeighbors(currentNode, map) {
 //is map unknown or known one when inputting, start is node, and goal is node
 function repeatedForwardA(map, start, goal) {
     let openList = new PriorityQueue();
-    let closedList = [];
+    let closedList = new Set();
     let trueMap = Array.from(Array(map.length), _ => Array(map[0].length).fill(2));
     start.g = 0;
     start.h = caculateHeuristic(start, goal);
@@ -213,7 +217,7 @@ function repeatedForwardA(map, start, goal) {
             }
             return path;
         }
-        closedList.push(currentNode);
+        closedList.add(currentNode);
 
         let neighbors = getNeighbors(currentNode, map);
         for(let neighbor of neighbors) {
@@ -221,7 +225,7 @@ function repeatedForwardA(map, start, goal) {
                 continue; // check neighbor in closed
             }
             let nextCost = currentNode.g + 1;
-            if(!(openList.heap.includes(neighbor)) || nextCost < neighbor.g) { //check if taking this would reduce the cost and not in open set
+            if(!(openList.contains(neighbor)) || nextCost < neighbor.g) { //check if taking this would reduce the cost and not in open set
                 neighbor.g = nextCost;
                 neighbor.h = caculateHeuristic(neighbor, goal);
                 neighbor.f = neighbor.g + neighbor.h;
@@ -255,12 +259,12 @@ function repeatedForwardA(map, start, goal) {
 
 
 let maze = [ [0,0,0,0], 
-             [0,0,0,0], 
-             [0,0,0,0],
-             [0,0,0,0] ];
+             [0,0,1,0], 
+             [0,0,1,0],
+             [0,0,1,0] ];
 
 let start = new Node(2,1);
-let goal = new Node(2,2);
+let goal = new Node(3,3);
 
 let pathFound = repeatedForwardA(maze, start, goal);
 console.log(pathFound);
