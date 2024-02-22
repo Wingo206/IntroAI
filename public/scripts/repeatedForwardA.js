@@ -172,12 +172,12 @@ class PriorityQueue {
 
 function caculateHeuristic(position, goal) {
     let dx = Math.abs(position.x - goal.x);
-    let dy = Math.abs(position.y - position.y);
+    let dy = Math.abs(position.y - goal.y);
 
     return Math.sqrt(dx * dx + dy * dy);
 }
 
-function getNeighbors(currentNode, map) {
+function getNeighbors(currentNode, map, trueMap) {
     const directions = [[1,0], [0,1], [-1,0], [0,-1]];
     let validDirections = [];
     for(let d = 0; d < directions.length; d++) {
@@ -186,6 +186,12 @@ function getNeighbors(currentNode, map) {
         let neighY = currentNode.y + dir[1];
         if(neighX >= 0 && neighY >= 0 && neighX < map.length && neighY < map[0].length && map[neighX][neighY] === 0) { //check if its valid space in maze
             validDirections.push(new Node(neighX, neighY));
+            trueMap[neighX][neighY] = 0;
+            displayA(trueMap);
+        }
+        if(neighX >= 0 && neighY >= 0 && neighX < map.length && neighY < map[0].length && map[neighX][neighY] === 1) {
+            trueMap[neighX][neighY] = 1;
+            displayA(trueMap);
         }
     }
     return validDirections;
@@ -195,6 +201,9 @@ function repeatedForwardA(map, start, goal) {
     let openList = new PriorityQueue();
     let closedList = new Set();
     let trueMap = Array.from(Array(map.length), _ => Array(map[0].length).fill(2));
+    trueMap[start.x][start.y] = 4;
+    trueMap[goal.x][goal.y] = 5;
+    displayA(trueMap);
     start.g = 0;
     start.h = caculateHeuristic(start, goal);
     start.f = start.g + start.h;
@@ -207,6 +216,8 @@ function repeatedForwardA(map, start, goal) {
     // let currentNode;
     while(!(openList.isEmpty())) {
         let currentNode = openList.dequeue();
+        trueMap[currentNode.x][currentNode.y] = 3;
+        displayA(trueMap);
         if(currentNode.x === goal.x && currentNode.y === goal.y) {
             console.log("Found goal");
             let path = [];
@@ -218,8 +229,10 @@ function repeatedForwardA(map, start, goal) {
             return path;
         }
         closedList.add(currentNode);
+        trueMap[currentNode.x][currentNode.y] = 7;
+        displayA(trueMap);
 
-        let neighbors = getNeighbors(currentNode, map);
+        let neighbors = getNeighbors(currentNode, map, trueMap);
         for(let neighbor of neighbors) {
             if(closedList.has(neighbor)) {
                 continue; // check neighbor in closed
@@ -232,6 +245,8 @@ function repeatedForwardA(map, start, goal) {
                 neighbor.parent = currentNode;
                 if(!(openList.heap.includes(neighbor))) {
                     openList.enqueue(neighbor);
+                    trueMap[currentNode.x][currentNode.y] = 6;
+                    displayA(trueMap);
                 }
             }
             
@@ -244,7 +259,9 @@ function repeatedForwardA(map, start, goal) {
     console.log("Finished a*, no goal found");
 }
 
-
+function displayA(map) {
+    updateCanvas(map);
+}
 
 // function repeatedForwardAHelper(map, position, goal, openList, closedList) {
 //     if(position == goal) {
