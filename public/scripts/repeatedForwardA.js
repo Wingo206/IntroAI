@@ -1,4 +1,20 @@
 console.log("repeatBroga");
+//let trueMap = [];
+
+//fix repeated forward A*
+//These are the steps:
+// make a big a*
+// make a copy of maze that is filled with 2's
+// make a helper a*
+// return a path 
+// if the path reaches the goal, you are good
+// if you run into a wall update as you go on each node
+// rerun helper a*
+// how would i stop it????? from going on forever
+
+// backward start from goal, and move goal
+
+// adaptive idk
 
 // input: map, start, end
 // true map: int 2d array
@@ -103,73 +119,6 @@ class PriorityQueue {
         }
     }
 
-    // size() {
-    //     return this._heap.length;
-    // }
-    
-    // isEmpty() {
-    //     return this.size() == 0;
-    // }
-
-    // peek() {
-    //     return this._heap[top];
-    // }
-
-    // push(...values) {
-    //     values.forEach(value => {
-    //         this._heap.push(value);
-    //         this._siftUp();
-    //     });
-    //     return this.size();
-    // }
-
-    // pop() {
-    //     const retrievedValue = this.peek();
-    //     const bottom = this.size() - 1;
-    //     if(bottom > top) {
-    //         this._swap(top, bottom);
-    //     }
-    //     this._heap.pop();
-    //     this._siftDown();
-    //     return poppedValue;
-    // }
-
-    // replace(value) {
-    //     const replacedValue = this.peek();
-    //     this._heap[top] = value;
-    //     this._siftDown();
-    //     return replacedValue;
-    // }
-
-    // _greater(i, j) {
-    //     return this._comparator(this._heap[i], this_heap[j]);
-    // }
-
-    // _swap(i, j) {
-    //     [this._heap[i], this._heap[j]] = [this._heap[j], this._heap[i]];
-    // }
-
-    // _siftUp() {
-    //     let node = this.size() - 1;
-    //     while(node > top && this._greater(node, parent(node))) {
-    //         this._swap(node, parent(node));
-    //         node = parent(node);
-    //     }
-    // }
-
-    // _siftDown() {
-    //     let node = top;
-    //     while(
-    //         (left(node) < this.size() && this.greater(left(node), node)) ||
-    //         (right(node) < this.size() && this._greater(right(node), node))
-    //     ) {
-    //         let maxChild = (right(node) < this.size() && this._greater(right(node), left(node))) ? right(node) : left(node);
-    //         this._swap(node, maxChild);
-    //         node = maxChild;
-    //     }
-    // }
-// }
-
 function caculateHeuristic(position, goal) {
     let dx = Math.abs(position.x - goal.x);
     let dy = Math.abs(position.y - goal.y);
@@ -177,33 +126,89 @@ function caculateHeuristic(position, goal) {
     return Math.sqrt(dx * dx + dy * dy);
 }
 
-function getNeighbors(currentNode, map, trueMap) {
+function getNeighbors(currentNode, trueMap) {
     const directions = [[1,0], [0,1], [-1,0], [0,-1]];
     let validDirections = [];
     for(let d = 0; d < directions.length; d++) {
         let dir = directions[d];
         let neighX = currentNode.x + dir[0];
         let neighY = currentNode.y + dir[1];
-        if(neighX >= 0 && neighY >= 0 && neighX < map.length && neighY < map[0].length && map[neighX][neighY] === 0) { //check if its valid space in maze
+        if(neighX >= 0 && neighY >= 0 && neighX < trueMap.length && neighY < trueMap[0].length && trueMap[neighX][neighY] != 1) { //check if its valid space in maze
             validDirections.push(new Node(neighX, neighY));
-            trueMap[neighX][neighY] = 0;
-            displayA(trueMap);
+            //trueMap[neighX][neighY] = 0;
+            //displayA(trueMap);
         }
-        if(neighX >= 0 && neighY >= 0 && neighX < map.length && neighY < map[0].length && map[neighX][neighY] === 1) {
-            trueMap[neighX][neighY] = 1;
-            displayA(trueMap);
-        }
+        // if(neighX >= 0 && neighY >= 0 && neighX < trueMap.length && neighY < trueMap[0].length && trueMap[neighX][neighY] === 1) {
+        //     trueMap[neighX][neighY] = 1;
+        //     displayA(trueMap);
+        // }
     }
     return validDirections;
 }
-//is map unknown or known one when inputting, start is node, and goal is node
+
 function repeatedForwardA(map, start, goal) {
-    let openList = new PriorityQueue();
-    let closedList = new Set();
-    let trueMap = Array.from(Array(map.length), _ => Array(map[0].length).fill(2));
+    let trueMap = Array.from(Array(map.length), _ => Array(map[0].length).fill(0).map(_ => 2)); // Initialize each row individually
     trueMap[start.x][start.y] = 4;
     trueMap[goal.x][goal.y] = 5;
-    displayA(trueMap);
+    //console.log(trueMap);
+    console.log(trueMap);
+    let path = repeatedForwardAHelper(trueMap, start, goal);
+    checkPath(path, map, trueMap);
+    console.log(path);
+
+    path = repeatedForwardAHelper(trueMap, start, goal);
+    checkPath(path, map, trueMap);
+    console.log(path);
+
+    path = repeatedForwardAHelper(trueMap, start, goal);
+    checkPath(path, map, trueMap);
+    console.log(path);
+
+    path = repeatedForwardAHelper(trueMap, start, goal);
+    checkPath(path, map, trueMap);
+    console.log(path);
+    //console.log(path);
+    //console.log(path);
+    //console.log(map);
+    //while(!checkPath(path, map, trueMap)) {
+    // path = repeatedForwardAHelper(trueMap, start, goal);
+    // console.log(trueMap);
+    // path = repeatedForwardAHelper(trueMap, start, goal);
+    // console.log(trueMap);
+    // path = repeatedForwardAHelper(trueMap, start, goal);
+    // console.log(trueMap);
+    //}
+    return path;
+}
+
+function checkPath(path, map, trueMap) {
+    for(let i = 0; i < path.length; i++) {
+        let currentNode = path[i];
+        //console.log(map);
+        if(currentNode.x >= 0 && currentNode.y >= 0 && map[currentNode.x][currentNode.y] == 1) {
+            console.log("Didn't reach the goal, hit a wall");
+            trueMap[currentNode.x][currentNode.y] = 1;
+            //console.log(trueMap);
+            return false;
+        }
+        else if(map[currentNode.x][currentNode.y] == 0 && trueMap[currentNode.x][currentNode.y] != 5 && trueMap[currentNode.x][currentNode.y] != 4) {
+            trueMap[currentNode.x][currentNode.y] = 0;
+            //console.log(trueMap);
+        }
+        else if(trueMap[currentNode.x][currentNode.y] == 5) {
+            console.log("Reached the goal, yay");
+            return true;
+        }
+    }
+    // /console.log(trueMap);
+    return false;
+}
+
+//is map unknown or known one when inputting, start is node, and goal is node
+function repeatedForwardAHelper(trueMap, start, goal) {
+    let openList = new PriorityQueue();
+    let closedList = new Set();
+    //displayA(trueMap);
     start.g = 0;
     start.h = caculateHeuristic(start, goal);
     start.f = start.g + start.h;
@@ -216,23 +221,24 @@ function repeatedForwardA(map, start, goal) {
     // let currentNode;
     while(!(openList.isEmpty())) {
         let currentNode = openList.dequeue();
-        trueMap[currentNode.x][currentNode.y] = 3;
-        displayA(trueMap);
+        //trueMap[currentNode.x][currentNode.y] = 3;
+        //displayA(trueMap);
         if(currentNode.x === goal.x && currentNode.y === goal.y) {
-            console.log("Found goal");
+            console.log("Possibly found goal");
             let path = [];
             let currentPath = currentNode;
             while(currentPath != null) {
-                path.unshift({ x: currentPath.x, y: currentPath.y}); //add to the beginning
+                //add nodes to the path instead pls
+                path.unshift(currentPath); //add to the beginning
                 currentPath = currentPath.parent;
             }
             return path;
         }
         closedList.add(currentNode);
-        trueMap[currentNode.x][currentNode.y] = 7;
-        displayA(trueMap);
+        //trueMap[currentNode.x][currentNode.y] = 7;
+        //displayA(trueMap);
 
-        let neighbors = getNeighbors(currentNode, map, trueMap);
+        let neighbors = getNeighbors(currentNode, trueMap);
         for(let neighbor of neighbors) {
             if(closedList.has(neighbor)) {
                 continue; // check neighbor in closed
@@ -245,8 +251,8 @@ function repeatedForwardA(map, start, goal) {
                 neighbor.parent = currentNode;
                 if(!(openList.heap.includes(neighbor))) {
                     openList.enqueue(neighbor);
-                    trueMap[currentNode.x][currentNode.y] = 6;
-                    displayA(trueMap);
+                    //trueMap[currentNode.x][currentNode.y] = 6;
+                    //displayA(trueMap);
                 }
             }
             
@@ -263,24 +269,12 @@ function displayA(map) {
     updateCanvas(map);
 }
 
-// function repeatedForwardAHelper(map, position, goal, openList, closedList) {
-//     if(position == goal) {
-//         console.log("You made it");
-//         return goal;
-//     }
-//     return position;
-// }
-
-
-
-
-
 let maze = [ [0,0,0,0], 
              [0,0,1,0], 
-             [0,0,1,0],
-             [0,0,1,0] ];
+             [0,1,1,0],
+             [0,1,1,0] ];
 
-let start = new Node(2,1);
+let start = new Node(2,0);
 let goal = new Node(3,3);
 
 let pathFound = repeatedForwardA(maze, start, goal);
