@@ -95,6 +95,8 @@ async function generateMaze() {
 
     updateCanvas(getMapFromMaze(maze, curX, curY));
 
+    let map = getMapFromMaze(maze, curX, curY);
+    repeatedForwardA(map, new Node(0, 1), new Node(map[0].length-1, map.length-2));
 }
 
 // turns map into maze with walls in between cells
@@ -118,6 +120,9 @@ function getMapFromMaze(maze, curX, curY) {
     // set current position
     map[2 * curX + 1][2 * curY + 1] = 3
     map[mapW - 1][mapH - 2] = 0; // open the exit
+
+    //testing
+   
     return map;
 }
 
