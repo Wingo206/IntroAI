@@ -108,7 +108,13 @@ async function generateMaze() {
 
     let map = getMapFromMaze(maze, curX, curY);
     await sleep(sleepTime)    
-    repeatedForwardA(map, new Node(0, 1), new Node(map[0].length-1, map.length-2));
+    // repeatedForwardA(map, new Node(0, 1), new Node(map[0].length-1, map.length-2));
+    // choose random spot for end
+    let startx = Math.floor(Math.random() * maze[0].length)*2+1
+    let starty = Math.floor(Math.random() * maze[0].length)*2+1
+    let endx = Math.floor(Math.random() * maze[0].length)*2+1
+    let endy = Math.floor(Math.random() * maze[0].length)*2+1
+    repeatedForwardA(map, new Node(startx, starty), new Node(endx, endy));
 }
 
 // turns map into maze with walls in between cells
