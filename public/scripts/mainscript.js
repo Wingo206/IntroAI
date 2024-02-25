@@ -31,7 +31,7 @@ function updateCanvas(map) {
     let boxSize = Math.min(canvas.width / map[0].length, canvas.height / map.length);
     // draw the boxes
     for (let x = 0; x < map.length; x++) {
-        for (let y = 0; y < map.length; y++) {
+        for (let y = 0; y < map[0].length; y++) {
             let curSquare = map[x][y];
             ctx.fillStyle = squareColors[curSquare];
             ctx.fillRect(x * boxSize, (map[0].length - y - 1) * boxSize, boxSize, boxSize);
@@ -108,7 +108,7 @@ async function generateMaze() {
 
     let map = getMapFromMaze(maze, curX, curY);
     await sleep(sleepTime)    
-    repeatedForwardA(map, new Node(0, 1), new Node(map[0].length-1, map.length-2));
+    repeatedForwardA(map, new Node(0, 1), new Node(map[0].length-1, map.length-2), false);
 }
 
 // turns map into maze with walls in between cells

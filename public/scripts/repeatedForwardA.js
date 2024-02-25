@@ -235,15 +235,26 @@ async function displayA(map) {
 //     return realPath;
 // }
 
-async function repeatedForwardA(map, start, goal) {
+async function repeatedForwardA(map, start, goal, isForward) {
     await (new Promise(r => setTimeout(r, 1000)));
     let trueMap = Array.from(Array(map.length), _ => Array(map[0].length).fill(0).map(_ => 2)); // Initialize each row individually
-    trueMap[start.x][start.y] = START;
-    trueMap[goal.x][goal.y] = GOAL;
+    let path;
+    let currentNode;
+    if (isForward) {
+        trueMap[start.x][start.y] = START;
+        trueMap[goal.x][goal.y] = GOAL;
+        currentNode = start;
+        updateSurroundings(start, trueMap, map);
+        path = await repeatedForwardAHelper(trueMap, start, goal);
+    }
+    else { //FOR BACKWARDS IMPLEMENTATION
+        trueMap[start.x][start.y] = GOAL;
+        trueMap[goal.x][goal.y] = START;
+        currentNode = goal;
+        updateSurroundings(goal, trueMap, map);
+        path = (await repeatedForwardAHelper(trueMap, goal, start)).reverse();
+    }
     let realPath = [];
-    let currentNode = start;
-    updateSurroundings(start, trueMap, map);
-    let path = await repeatedForwardAHelper(trueMap, start, goal);
     while (path !== undefined) {
 
         displayFollowPath(trueMap, currentNode, realPath, path);
@@ -255,11 +266,15 @@ async function repeatedForwardA(map, start, goal) {
         // check next node
         if (nextNode.x >= 0 && nextNode.y >= 0 && map[nextNode.x][nextNode.y] == WALL) {
             console.log("Didn't reach the goal, hit a wall");
-
-            path = await repeatedForwardAHelper(trueMap, currentNode, goal);
+            if (isForward) {
+                path = await repeatedForwardAHelper(trueMap, currentNode, goal); 
+            }
+            else {
+                path = (await repeatedForwardAHelper(trueMap, goal, currentNode)).reverse();
+            }
             continue;
         }
-        else if (trueMap[nextNode.x][nextNode.y] == GOAL) {
+        else if (trueMap[nextNode.x][nextNode.y] == ((isForward) ? GOAL:START)) {
             console.log("Reached the goal, yay");
             realPath.push(currentNode);
             realPath.push(nextNode);
@@ -359,12 +374,12 @@ async function repeatedForwardAHelper(trueMap, start, goal) {
             let path = [];
             let currentPath = currentNode;
             while (currentPath != null) {
+                //add nodes to the path instead pls
+                path.unshift(currentPath); //add to the beginning
                 // check if we hit the start
                 if (currentPath == start) {
                     break;
                 }
-                //add nodes to the path instead pls
-                path.unshift(currentPath); //add to the beginning
                 currentPath = currentPath.parent;
             }
             return path;
