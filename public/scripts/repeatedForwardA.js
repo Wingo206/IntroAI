@@ -169,8 +169,17 @@ function getNeighbors(currentNode, trueMap) {
 }
 
 function makeCopy(map) {
-    let copy = Array.from(Array(map.length), _ => Array(map[0].length).fill(0)); // Initialize each row individually
-    return copy.map((_, i) => map[i].map(n => n));
+    // let copy = Array.from(Array(map.length), _ => Array(map[0].length).fill(0)); // Initialize each row individually
+    // return copy.map((_, i) => map[i].map(n => n));
+    let copy = [];
+    for (let x= 0; x < map.length; x++) {
+        let row = [];
+        for (let y= 0; y < map[0].length; y++) {
+            row.push(new Number(map[x][y]));
+        }
+        copy.push(row);
+    }
+    return copy;
 }
 
 // const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -181,8 +190,8 @@ async function displayA(map) {
 async function repeatedForwardA(map, start, goal) {
     await (new Promise(r => setTimeout(r, 1000)));
     let trueMap = Array.from(Array(map.length), _ => Array(map[0].length).fill(0).map(_ => 2)); // Initialize each row individually
-    trueMap[start.x][start.y] = 4;
-    trueMap[goal.x][goal.y] = 5;
+    trueMap[start.x][start.y] = START;
+    trueMap[goal.x][goal.y] = END;
     //console.log(trueMap);
     console.log('broga')
     // console.log(makecopylol(trueMap))
@@ -190,12 +199,13 @@ async function repeatedForwardA(map, start, goal) {
     let validPath = false;
     do {
         // console.log(trueMap);
-        let path = repeatedForwardAHelper(trueMap, start, goal);
+        let path = await repeatedForwardAHelper(trueMap, start, goal);
         let validPathResult = checkPath(path, map, trueMap, start);
         validPath = validPathResult.validPath;
         start = validPathResult.updatedStart;
         path = validPathResult.updatedPath
         //console.log(path);
+        //console.log(start);
         realPath.push(...path);                                        //IMPORTANT NOTES, seems like it doesn't update start and doesn;t cut off the nodes not included 
         await displayA(trueMap);
         await sleep(100);
@@ -251,7 +261,7 @@ function checkPath(path, map, trueMap, start) {
 }
 
 //is map unknown or known one when inputting, start is node, and goal is node
-function repeatedForwardAHelper(trueMap, start, goal) {
+async function repeatedForwardAHelper(trueMap, start, goal) {
     let openList = new PriorityQueue();
     let closedList = new Set();
     //displayA(trueMap);
@@ -266,6 +276,9 @@ function repeatedForwardAHelper(trueMap, start, goal) {
     //console.log(path);
     // let currentNode;
     while (!(openList.isEmpty())) {
+        displayAHelper(trueMap, start, goal, openList, closedList);
+        await sleep(10);
+
         let currentNode = openList.dequeue();
         //trueMap[currentNode.x][currentNode.y] = 3;
         //displayA(trueMap);
@@ -309,6 +322,16 @@ function repeatedForwardAHelper(trueMap, start, goal) {
         }
     }
     console.log("Finished a*, no goal found");
+}
+
+function displayAHelper(map, start, goal, openList, closedList) {
+    let mapCopy = makeCopy(map);
+    openList.heap.forEach(n => mapCopy[n.x][n.y] = OPEN)
+    //closedList.forEach(n => mapCopy[n.x][n.y] = CLOSED)
+    mapCopy[start.x][start.y] = START;
+    mapCopy[goal.x][goal.y] = END;
+    console.log(mapCopy);
+    updateCanvas(mapCopy);
 }
 
 function displayA(map) {

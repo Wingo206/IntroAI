@@ -1,5 +1,5 @@
 
-const sleepTime = 1000;
+const sleepTime = 10;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 function drawLine(ctx, x1, y1, x2, y2) {
@@ -11,10 +11,19 @@ function drawLine(ctx, x1, y1, x2, y2) {
 
 // map: 2d array of ints
 // 0 = empty, 1 = wall, 2 = unknown, 3 = currentPos, 4 = start, 5 = end, 6 = open, 7 = closed
+const EMPTY = 0; // gray
+const WALL = 1; // black
+const UNKNOWN = 2; // dark gray
+const CURRENTPOS = 3; // red
+const START = 4; // green
+const END = 5; // blue
+const OPEN = 6; // yellow
+const CLOSED = 7; // cyan
+
 function updateCanvas(map) {
     let canvas = document.getElementById("canvas");
     let ctx = canvas.getContext("2d");
-    let squareColors = ["#EEEEEE", "#333333", "#999999", "#EE3333"];
+    let squareColors = ["#EEEEEE", "#333333", "#999999", "#EE3333", "#33EE33", "#3333EE", "#EEEE33", "#33EEEEE"];  
     ctx.fillStyle = "#EEEEEE";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     let boxSize = Math.min(canvas.width / map[0].length, canvas.height / map.length);
@@ -79,7 +88,7 @@ async function generateMaze() {
             curX -= dirCameFrom[0];
             curY -= dirCameFrom[1];
             updateCanvas(getMapFromMaze(maze, curX, curY));
-            //await sleep(sleepTime)
+            await sleep(sleepTime)
             continue;
         }
         // move to a random neighbor
@@ -90,7 +99,7 @@ async function generateMaze() {
         count++;
         // uppdate the visual
         updateCanvas(getMapFromMaze(maze, curX, curY));
-        //await sleep(sleepTime)
+        await sleep(sleepTime)
     }
 
     updateCanvas(getMapFromMaze(maze, curX, curY));
