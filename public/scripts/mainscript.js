@@ -1,5 +1,5 @@
 
-const sleepTime = 10;
+const sleepTime = 1000;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 function drawLine(ctx, x1, y1, x2, y2) {
@@ -79,7 +79,7 @@ async function generateMaze() {
             curX -= dirCameFrom[0];
             curY -= dirCameFrom[1];
             updateCanvas(getMapFromMaze(maze, curX, curY));
-            await sleep(sleepTime)
+            //await sleep(sleepTime)
             continue;
         }
         // move to a random neighbor
@@ -90,12 +90,13 @@ async function generateMaze() {
         count++;
         // uppdate the visual
         updateCanvas(getMapFromMaze(maze, curX, curY));
-        await sleep(sleepTime)
+        //await sleep(sleepTime)
     }
 
     updateCanvas(getMapFromMaze(maze, curX, curY));
 
     let map = getMapFromMaze(maze, curX, curY);
+    await sleep(sleepTime)    
     repeatedForwardA(map, new Node(0, 1), new Node(map[0].length-1, map.length-2));
 }
 
