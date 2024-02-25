@@ -44,7 +44,7 @@ class Node {
         this.parent = null;
         this.x = x;
         this.y = y;
-        this.g = 0;
+        this.g = 1000000;
         this.h = 0;
         this.f = 0;
     }
@@ -68,13 +68,27 @@ class PriorityQueue {
     }
 
     dequeue() {
-        let min = this.heap[0];
-        let last = this.heap.pop();
-        if (this.heap.length > 0) {
-            this.heap[0] = last;
-            this.bubbleDown();
+        let minIndex = 0;
+        for (let i = 0; i < this.heap.length; i++) {
+            if (this.heap[i].f < this.heap[minIndex].f) {
+                minIndex = i;
+            } else if (this.heap[i].f == this.heap[minIndex].f) {
+                // prioritize lower g
+                if (this.heap[i].g < this.heap[minIndex].g) {
+                    minIndex = i;
+                }
+            }
         }
+        let min = this.heap[minIndex];
+        this.heap.splice(minIndex, 1);
         return min;
+        // let min = this.heap[0];
+        // let last = this.heap.pop();
+        // if (this.heap.length > 0) {
+        //     this.heap[0] = last;
+        //     this.bubbleDown();
+        // }
+        // return min;
     }
 
     bubbleUp() {
@@ -97,9 +111,9 @@ class PriorityQueue {
             let rightChildIndex = 2 * index + 2;
             let smallest = index;
             if (leftChildIndex < length && this.heap[leftChildIndex].f < this.heap[smallest].f) {
-                if(this.heap[leftChildIndex].f == this.heap[smallest].f) {                                   //Do you have to check if g cost should be larger or smaller 
-                    if(this.heap[leftChildIndex].g < this.heap[smallest].g) { //Check if smallest g cost is greater, if it is change the order
-                        smallest = leftChildIndex;     
+                if (this.heap[leftChildIndex].f == this.heap[smallest].f) {                                   //Do you have to check if g cost should be larger or smaller 
+                    if (this.heap[leftChildIndex].g < this.heap[smallest].g) { //Check if smallest g cost is greater, if it is change the order
+                        smallest = leftChildIndex;
                     }
                 }
                 else {
@@ -107,9 +121,9 @@ class PriorityQueue {
                 }
             }
             if (rightChildIndex < length && this.heap[rightChildIndex].f < this.heap[smallest].f) {
-                if(this.heap[rightChildIndex].f == this.heap[smallest].f) {                                   //Do you have to check if g cost should be larger or smaller 
-                    if(this.heap[rightChildIndex].g < this.heap[smallest].g) { //Check if smallest g cost is greater, if it is change the order
-                        smallest = rightChildIndex;     
+                if (this.heap[rightChildIndex].f == this.heap[smallest].f) {                                   //Do you have to check if g cost should be larger or smaller 
+                    if (this.heap[rightChildIndex].g < this.heap[smallest].g) { //Check if smallest g cost is greater, if it is change the order
+                        smallest = rightChildIndex;
                     }
                 }
                 else {
@@ -146,6 +160,17 @@ function caculateHeuristic(position, goal) {
     let dy = Math.abs(position.y - goal.y);
 
     return Math.sqrt(dx * dx + dy * dy);
+    // return dx + dy
+}
+
+function setContains(set, node) {
+    for (let i = 0; i < set.length; i++) {
+        let n = set[i]
+        if (n.x == node.x && n.y == node.y) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function getNeighbors(currentNode, trueMap) {
@@ -172,9 +197,9 @@ function makeCopy(map) {
     // let copy = Array.from(Array(map.length), _ => Array(map[0].length).fill(0)); // Initialize each row individually
     // return copy.map((_, i) => map[i].map(n => n));
     let copy = [];
-    for (let x= 0; x < map.length; x++) {
+    for (let x = 0; x < map.length; x++) {
         let row = [];
-        for (let y= 0; y < map[0].length; y++) {
+        for (let y = 0; y < map[0].length; y++) {
             row.push(new Number(map[x][y]));
         }
         copy.push(row);
@@ -187,99 +212,146 @@ async function displayA(map) {
     updateCanvas(map)
 }
 
+// async function repeatedForwardAold(map, start, goal) {
+//     await (new Promise(r => setTimeout(r, 1000)));
+//     let trueMap = Array.from(Array(map.length), _ => Array(map[0].length).fill(0).map(_ => 2)); // Initialize each row individually
+//     trueMap[start.x][start.y] = START;
+//     trueMap[goal.x][goal.y] = GOAL;
+//     let realPath = [];
+//     let validPath = false;
+//     do {
+//         let path = await repeatedForwardAHelper(trueMap, start, goal);
+//         // let path = await repeatedForwardAHelper(map, start, goal); // full knowledge
+//         let validPathResult = checkPath(path, map, trueMap, start);
+//         validPath = validPathResult.validPath;
+//         start = validPathResult.updatedStart;
+//         path = validPathResult.updatedPath
+//         realPath.push(...path);                                        //IMPORTANT NOTES, seems like it doesn't update start and doesn;t cut off the nodes not included 
+//         await displayA(trueMap);
+//         await sleep(100);
+//     } while (!validPath);
+
+//     console.log(realPath);
+//     return realPath;
+// }
+
 async function repeatedForwardA(map, start, goal) {
     await (new Promise(r => setTimeout(r, 1000)));
     let trueMap = Array.from(Array(map.length), _ => Array(map[0].length).fill(0).map(_ => 2)); // Initialize each row individually
     trueMap[start.x][start.y] = START;
-    trueMap[goal.x][goal.y] = END;
-    //console.log(trueMap);
-    console.log('broga')
-    // console.log(makecopylol(trueMap))
+    trueMap[goal.x][goal.y] = GOAL;
     let realPath = [];
-    let validPath = false;
-    do {
-        // console.log(trueMap);
-        let path = await repeatedForwardAHelper(trueMap, start, goal);
-        let validPathResult = checkPath(path, map, trueMap, start);
-        validPath = validPathResult.validPath;
-        start = validPathResult.updatedStart;
-        path = validPathResult.updatedPath
-        //console.log(path);
-        //console.log(start);
-        realPath.push(...path);                                        //IMPORTANT NOTES, seems like it doesn't update start and doesn;t cut off the nodes not included 
-        await displayA(trueMap);
+    let currentNode = start;
+    updateSurroundings(start, trueMap, map);
+    let path = await repeatedForwardAHelper(trueMap, start, goal);
+    while (path !== undefined) {
+
+        displayFollowPath(trueMap, currentNode, realPath, path);
         await sleep(100);
-        // console.log(path);
-    } while (!validPath);
 
-    // path = repeatedForwardAHelper(trueMap, start, goal);
-    // checkPath(path, map, trueMap);
-    // await displayA(trueMap);
-    // await sleep(1000);
-    // console.log(path);
+        let nextNode = path[0];
+        path.splice(0, 1);
 
-    //console.log(path);
-    //console.log(path);
-    //console.log(map);
-    //while(!checkPath(path, map, trueMap)) {
-    // path = repeatedForwardAHelper(trueMap, start, goal);
-    // console.log(trueMap);
-    // path = repeatedForwardAHelper(trueMap, start, goal);
-    // console.log(trueMap);
-    // path = repeatedForwardAHelper(trueMap, start, goal);
-    // console.log(trueMap);
-    //}
+        // check next node
+        if (nextNode.x >= 0 && nextNode.y >= 0 && map[nextNode.x][nextNode.y] == WALL) {
+            console.log("Didn't reach the goal, hit a wall");
+
+            path = await repeatedForwardAHelper(trueMap, currentNode, goal);
+            continue;
+        }
+        else if (trueMap[nextNode.x][nextNode.y] == GOAL) {
+            console.log("Reached the goal, yay");
+            realPath.push(currentNode);
+            realPath.push(nextNode);
+            displayFollowPath(trueMap, nextNode, realPath, path);
+            return realPath;
+        }
+
+        // iterate the position
+        realPath.push(currentNode);
+        currentNode = nextNode;
+
+        // update surroundings
+        updateSurroundings(currentNode, trueMap, map);
+    }
+
     console.log(realPath);
     return realPath;
 }
 
-function checkPath(path, map, trueMap, start) {
-    for (let i = 0; i < path.length; i++) {
-        let currentNode = path[i];
-        //console.log(map);
-        if (currentNode.x >= 0 && currentNode.y >= 0 && map[currentNode.x][currentNode.y] == 1) {
-            console.log("Didn't reach the goal, hit a wall");
-            trueMap[currentNode.x][currentNode.y] = 1;
-            if(i != 0) {
-                start = path[i-1];
+function updateSurroundings(currentNode, trueMap, map) {
+
+    const directions = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+    for (let d = 0; d < directions.length; d++) {
+        let direction = directions[d];
+
+        let cX = currentNode.x + direction[0];
+        let cY = currentNode.y + direction[1];
+        if (cX >= 0 && cX < map.length && cY >= 0 && cY < map[0].length) {
+            let val = map[cX][cY];
+            if (val == EMPTY || val == WALL) {
+                if (trueMap[cX][cY] == UNKNOWN) {
+                    trueMap[cX][cY] = val;
+                }
             }
-            path = path.slice(0,i);
-            //console.log(trueMap);
-            return { validPath: false, updatedStart: start, updatedPath: path};
-        }
-        else if (map[currentNode.x][currentNode.y] == 0 && trueMap[currentNode.x][currentNode.y] != 5 && trueMap[currentNode.x][currentNode.y] != 4) {
-            trueMap[currentNode.x][currentNode.y] = 0;
-            //console.log(trueMap);
-        }
-        else if (trueMap[currentNode.x][currentNode.y] == 5) {
-            console.log("Reached the goal, yay");
-            return { validPath: true, updatedStart: start, updatedPath: path};
         }
     }
-    // /console.log(trueMap);
-    return { validPath: false, updatedStart: start, updatedPath: path};
+
 }
+
+// function checkPath(path, map, trueMap, start) {
+//     for (let i = 0; i < path.length; i++) {
+//         let currentNode = path[i];
+//         if (currentNode.x >= 0 && currentNode.y >= 0 && map[currentNode.x][currentNode.y] == 1) {
+//             console.log("Didn't reach the goal, hit a wall");
+//             trueMap[currentNode.x][currentNode.y] = 1;
+//             if (i != 0) {
+//                 start = path[i - 1];
+//             }
+//             path = path.slice(0, i);
+// return {validPath: false, updatedStart: start, updatedPath: path};
+// }
+// else if (map[currentNode.x][currentNode.y] == 0 && trueMap[currentNode.x][currentNode.y] != 5 && trueMap[currentNode.x][currentNode.y] != 4) {
+// trueMap[currentNode.x][currentNode.y] = 0;
+// }
+// else if (trueMap[currentNode.x][currentNode.y] == 5) {
+// console.log("Reached the goal, yay");
+// return {validPath: true, updatedStart: start, updatedPath: path};
+// }
+// const directions = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+// for (let d = 0; d < directions.length; d++) {
+// let direction = directions[d];
+
+// let cX = currentNode.x + direction[0];
+// let cY = currentNode.y + direction[1];
+// if (cX >= 0 && cX < map.length && cY >= 0 && cY < map[0].length) {
+//     let val = map[cX][cY];
+//     if (val == EMPTY || val == WALL) {
+//         if (trueMap[cX][cY] == UNKNOWN) {
+//             trueMap[cX][cY] = val;
+//         }
+//     }
+// }
+// }
+// }
+// return {validPath: false, updatedStart: start, updatedPath: path};
+// }
 
 //is map unknown or known one when inputting, start is node, and goal is node
 async function repeatedForwardAHelper(trueMap, start, goal) {
     let openList = new PriorityQueue();
-    let closedList = new Set();
+    let closedList = [];
     //displayA(trueMap);
     start.g = 0;
     start.h = caculateHeuristic(start, goal);
     start.f = start.g + start.h;
     openList.enqueue(start); //put start into open list;
-    // let startNode = new Node(start[0], start[1], 0, caculateHeuristic(start, goal));
-    // openList.push(startNode);
-    //console.log(trueMap);
-    //let path = repeatedForwardAHelper(trueMap, start, goal, openList, closedList);
-    //console.log(path);
-    // let currentNode;
     while (!(openList.isEmpty())) {
-        displayAHelper(trueMap, start, goal, openList, closedList);
-        await sleep(10);
 
         let currentNode = openList.dequeue();
+        displayAHelper(trueMap, currentNode, start, goal, openList, closedList);
+        await sleep(10);
+
         //trueMap[currentNode.x][currentNode.y] = 3;
         //displayA(trueMap);
         if (currentNode.x === goal.x && currentNode.y === goal.y) {
@@ -287,29 +359,34 @@ async function repeatedForwardAHelper(trueMap, start, goal) {
             let path = [];
             let currentPath = currentNode;
             while (currentPath != null) {
+                // check if we hit the start
+                if (currentPath == start) {
+                    break;
+                }
                 //add nodes to the path instead pls
                 path.unshift(currentPath); //add to the beginning
                 currentPath = currentPath.parent;
             }
             return path;
         }
-        closedList.add(currentNode);
+        closedList.push(currentNode);
         //trueMap[currentNode.x][currentNode.y] = 7;
         //displayA(trueMap);
 
         let neighbors = getNeighbors(currentNode, trueMap);
         for (let neighbor of neighbors) {
-            if (closedList.has(neighbor)) {
-                continue; // check neighbor in closed
-            }
+            // if (setContains(closedList, neighbor)) {
+            //     continue; // check neighbor in closed
+            // }
             let nextCost = currentNode.g + 1;
-            if (!(openList.contains(neighbor)) || nextCost < neighbor.g) { //check if in open set alredy taking this would reduce the cost or not in open set then also check
+            if (!openList.contains(neighbor) && !setContains(closedList, neighbor)) { //check if in open set alredy taking this would reduce the cost or not in open set then also check
                 neighbor.g = nextCost;
                 neighbor.h = caculateHeuristic(neighbor, goal);
                 neighbor.f = neighbor.g + neighbor.h;
                 neighbor.parent = currentNode;
                 if (!(openList.heap.includes(neighbor))) {
-                    openList.enqueue(neighbor);
+                    // openList.enqueue(neighbor);
+                    openList.heap.push(neighbor)
                     //trueMap[currentNode.x][currentNode.y] = 6;
                     //displayA(trueMap);
                 }
@@ -324,13 +401,21 @@ async function repeatedForwardAHelper(trueMap, start, goal) {
     console.log("Finished a*, no goal found");
 }
 
-function displayAHelper(map, start, goal, openList, closedList) {
+function displayAHelper(map, current, start, goal, openList, closedList) {
     let mapCopy = makeCopy(map);
+    closedList.forEach(n => mapCopy[n.x][n.y] = CLOSED)
     openList.heap.forEach(n => mapCopy[n.x][n.y] = OPEN)
-    //closedList.forEach(n => mapCopy[n.x][n.y] = CLOSED)
     mapCopy[start.x][start.y] = START;
-    mapCopy[goal.x][goal.y] = END;
-    console.log(mapCopy);
+    mapCopy[goal.x][goal.y] = GOAL;
+    mapCopy[current.x][current.y] = CURRENTPOS;
+    updateCanvas(mapCopy);
+}
+
+function displayFollowPath(trueMap, currentPos, realPath, restPath) {
+    let mapCopy = makeCopy(trueMap);
+    realPath.forEach(n => mapCopy[n.x][n.y] = REALPATH);
+    restPath.forEach(n => mapCopy[n.x][n.y] = RESTPATH);
+    mapCopy[currentPos.x][currentPos.y] = CURRENTPOS;
     updateCanvas(mapCopy);
 }
 

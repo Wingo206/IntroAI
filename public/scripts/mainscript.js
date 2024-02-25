@@ -16,14 +16,16 @@ const WALL = 1; // black
 const UNKNOWN = 2; // dark gray
 const CURRENTPOS = 3; // red
 const START = 4; // green
-const END = 5; // blue
+const GOAL = 5; // blue
 const OPEN = 6; // yellow
 const CLOSED = 7; // cyan
+const REALPATH = 8 // pink
+const RESTPATH = 9 // purple
 
 function updateCanvas(map) {
     let canvas = document.getElementById("canvas");
     let ctx = canvas.getContext("2d");
-    let squareColors = ["#EEEEEE", "#333333", "#999999", "#EE3333", "#33EE33", "#3333EE", "#EEEE33", "#33EEEEE"];  
+    let squareColors = ["#EEEEEE", "#333333", "#999999", "#EE3333", "#33EE33", "#3333EE", "#EEEE33", "#33EEEE", "#EE33EE", "#AD33EE"];  
     ctx.fillStyle = "#EEEEEE";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     let boxSize = Math.min(canvas.width / map[0].length, canvas.height / map.length);
@@ -87,8 +89,8 @@ async function generateMaze() {
             let dirCameFrom = directions[maze[curX][curY]];
             curX -= dirCameFrom[0];
             curY -= dirCameFrom[1];
-            updateCanvas(getMapFromMaze(maze, curX, curY));
-            await sleep(sleepTime)
+            // updateCanvas(getMapFromMaze(maze, curX, curY));
+            // await sleep(sleepTime)
             continue;
         }
         // move to a random neighbor
@@ -98,8 +100,8 @@ async function generateMaze() {
         maze[curX][curY] = directions.indexOf(pickedDir);
         count++;
         // uppdate the visual
-        updateCanvas(getMapFromMaze(maze, curX, curY));
-        await sleep(sleepTime)
+        // updateCanvas(getMapFromMaze(maze, curX, curY));
+        // await sleep(sleepTime)
     }
 
     updateCanvas(getMapFromMaze(maze, curX, curY));
