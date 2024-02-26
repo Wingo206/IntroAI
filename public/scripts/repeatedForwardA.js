@@ -145,13 +145,14 @@ class PriorityQueue {
 
 }
 
-function calculateHeuristic(position, goal, oldGvals) {
+function calculateHeuristic(position, goal, oldGvals, goalVal) {
     let res = -1;
     // check for adaptive A*
     if (oldGvals !== undefined) {
         let oldVal = oldGvals[position.x][position.y]
         if (oldVal != -1) {
             res = oldGvals[goal.x][goal.y] - oldVal;
+            //return res;
         }
     }
 
@@ -159,8 +160,8 @@ function calculateHeuristic(position, goal, oldGvals) {
     let dy = Math.abs(position.y - goal.y);
 
     // return Math.max(Math.sqrt(dx * dx + dy * dy));
-    return Math.max(dx + dy, res);
-    // return dx + dy
+    //return Math.max(dx + dy, res);
+    return dx + dy
 }
 
 function setContains(set, node) {
@@ -333,9 +334,10 @@ async function repeatedForwardAHelper(trueMap, start, goal, oldGvals) {
             }
             // if adaptive, give array of g vals
             if (oldGvals !== undefined) {
-                openList.heap.forEach(n => oldGvals[n.x][n.y] = n.g);
+                //openList.heap.forEach(n => oldGvals[n.x][n.y] = n.g);
                 closedList.forEach(n => oldGvals[n.x][n.y] = n.g);
-                oldGvals[goal.x][goal.y] = currentNode.g + 1;
+                oldGvals[goal.x][goal.y] = goal.g;
+                console.log(goal.g)
             }
             return path;
         }
@@ -357,7 +359,7 @@ async function repeatedForwardAHelper(trueMap, start, goal, oldGvals) {
                 neighbor.f = 100000 * (neighbor.g + neighbor.h) - neighbor.g;
                 neighbor.parent = currentNode;
                 if (neighbor.x == goal.x && neighbor.y == goal.y) {
-                    console.log("goal was found lol")
+                    //console.log("goal was found lol")
                     goalNode = neighbor;
                 }
                 if (!openList.contains(neighbor) && !setContains(closedList, neighbor)) {

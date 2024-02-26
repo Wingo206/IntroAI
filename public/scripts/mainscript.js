@@ -1,4 +1,6 @@
-const ANIMATE = true;
+const ANIMATE = false;
+const FORWARD = true;
+const ADAPTIVE = true;
 
 const sleepTime = 10;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -59,7 +61,7 @@ async function generateMazeButton() {
 
     // await sleep(sleepTime)    
     globalCounter = 0;
-    await repeatedForwardA(map, new Node(0, 1), new Node(map[0].length - 1, map.length - 2), true, true);
+    await repeatedForwardA(map, new Node(0, 1), new Node(map[0].length - 1, map.length - 2), FORWARD, ADAPTIVE);
     console.log("states explored: " + globalCounter);
 
     ////adaptive
@@ -190,7 +192,8 @@ async function runtests() {
         let seed = "seed" + i;
         let map = await generateMaze(seed, 50, 50)
         globalCounter = 0;
-        await repeatedForwardA(map, new Node(0, 1), new Node(map[0].length - 1, map.length - 2), true, true);
+        console.log(FORWARD + ", " + ADAPTIVE)
+        await repeatedForwardA(map, new Node(0, 1), new Node(map[0].length - 1, map.length - 2), FORWARD, ADAPTIVE);
         console.log(i + " states explored: " + globalCounter);
 
         results.push(globalCounter);
