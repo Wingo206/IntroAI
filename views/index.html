@@ -12,19 +12,26 @@
     <h1>A* Algorithm Showcase</h1>
     <canvas id="canvas" width="400" height="400">
     </canvas>
+    <canvas id="canvas2" width="400" height="400">
+    </canvas>
 
     <fieldset class="command">
         <legend>Generate Maze</legend>
+        <p class="command_key">Seed: </p>
+        <input id="seed" class="command_input" type="text">
         <p class="command_key">Width: </p>
         <input id="mazeWidth" class="command_input" type="number">
         <p class="command_key">Height: </p>
         <input id="mazeHeight" class="command_input" type="number">
-        <button onclick="generateMaze()" class="command_button">Generate</button>
+        <button onclick="generateMazeButton()" class="command_button">Generate</button>
 
     </fieldset>
 
+    <button onclick="runtests()">Run 50 Tests</button>
+
     <script src="scripts/mainscript.js"></script>
     <script src="scripts/repeatedForwardA.js"></script>
+    <script src="scripts/random.js"></script>
 </body>
 
 </html>

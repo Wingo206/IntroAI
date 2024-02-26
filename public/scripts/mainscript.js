@@ -1,3 +1,4 @@
+const ANIMATE = true;
 
 const sleepTime = 10;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -22,10 +23,10 @@ const CLOSED = 7; // cyan
 const REALPATH = 8 // pink
 const RESTPATH = 9 // purple
 
-function updateCanvas(map) {
-    let canvas = document.getElementById("canvas");
+function updateCanvas(id, map) {
+    let canvas = document.getElementById(id);
     let ctx = canvas.getContext("2d");
-    let squareColors = ["#EEEEEE", "#333333", "#999999", "#EE3333", "#33EE33", "#3333EE", "#EEEE33", "#33EEEE", "#EE33EE", "#AD33EE"];  
+    let squareColors = ["#EEEEEE", "#333333", "#999999", "#EE3333", "#33EE33", "#3333EE", "#EEEE33", "#33EEEE", "#EE33EE", "#AD33EE"];
     ctx.fillStyle = "#EEEEEE";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     let boxSize = Math.min(canvas.width / map[0].length, canvas.height / map.length);
@@ -50,10 +51,53 @@ function updateCanvas(map) {
 // right, up, left, down
 const directions = [[1, 0], [0, 1], [-1, 0], [0, -1]];
 
-// reads size from the input fields, then generates the maze
-async function generateMaze() {
+async function generateMazeButton() {
+    let seedString = document.getElementById("seed").value;
     let mazeWidth = Number(document.getElementById("mazeWidth").value);
     let mazeHeight = Number(document.getElementById("mazeHeight").value);
+    let map = await generateMaze(seedString, mazeWidth, mazeHeight);
+
+    // await sleep(sleepTime)    
+    globalCounter = 0;
+    await repeatedForwardA(map, new Node(0, 1), new Node(map[0].length - 1, map.length - 2), true, true);
+    console.log("states explored: " + globalCounter);
+
+    ////adaptive
+    //map = getMapFromMaze(maze, curX, curY);
+    //await sleep(sleepTime)    
+    //globalCounter = 0;
+    //await repeatedForwardA(map, new Node(0, 1), new Node(map[0].length-1, map.length-2), true, true);
+    //console.log("states explored: " + globalCounter);
+    // choose random spot for end
+    // let startx = Math.floor(Math.random() * maze[0].length)*2+1
+    // let starty = Math.floor(Math.random() * maze[0].length)*2+1
+    // let endx = Math.floor(Math.random() * maze[0].length)*2+1
+    // let endy = Math.floor(Math.random() * maze[0].length)*2+1
+    // repeatedForwardA(map, new Node(startx, starty), new Node(endx, endy), false, true);
+}
+
+async function generateMazebad(seedString, mazeWidth, mazeHeight) {
+    let seed = cyrb128(seedString);
+    let rand = splitmix32(seed[0]);
+    mazeWidth = mazeWidth * 2 + 1
+    mazeHeight = mazeHeight * 2 + 1
+    let maze = Array.from(Array(mazeWidth), _ => Array(mazeHeight).fill(EMPTY));
+    for (let x = 0; x < mazeWidth-1; x++) {
+
+        for (let y = 0; y < mazeWidth; y++) {
+            maze[x][y] = (rand() > 0.1) ? EMPTY : WALL;
+        }
+    }
+    maze[0][1] = EMPTY
+    maze[mazeWidth-1][mazeHeight-2] = EMPTY
+    updateCanvas("canvas", maze);
+    return maze;
+}
+// reads size from the input fields, then generates the maze
+async function generateMaze(seedString, mazeWidth, mazeHeight) {
+    let seed = cyrb128(seedString);
+    let rand = splitmix32(seed[0]);
+
     // array with numbers saying which direction you came from, -1 if unvisited
     let maze = Array.from(Array(mazeWidth), _ => Array(mazeHeight).fill(-1));
 
@@ -94,37 +138,23 @@ async function generateMaze() {
             continue;
         }
         // move to a random neighbor
-        let pickedDir = validDirections[Math.floor(Math.random() * validDirections.length)]
+        let pickedDir = validDirections[Math.floor(rand() * validDirections.length)]
         curX += pickedDir[0];
         curY += pickedDir[1];
         maze[curX][curY] = directions.indexOf(pickedDir);
         count++;
         // uppdate the visual
-        // updateCanvas(getMapFromMaze(maze, curX, curY));
-        // await sleep(sleepTime)
+        if (ANIMATE) {
+            updateCanvas("canvas", getMapFromMaze(maze, curX, curY));
+            await sleep(sleepTime)
+        }
     }
 
-    updateCanvas(getMapFromMaze(maze, curX, curY));
+    updateCanvas("canvas", getMapFromMaze(maze, curX, curY));
 
     //forward
     let map = getMapFromMaze(maze, curX, curY);
-    await sleep(sleepTime)    
-    globalCounter = 0;
-    await repeatedForwardA(map, new Node(0, 1), new Node(map[0].length-1, map.length-2), true, false);
-    console.log("states explored: " + globalCounter);
-
-    //adaptive
-    map = getMapFromMaze(maze, curX, curY);
-    await sleep(sleepTime)    
-    globalCounter = 0;
-    await repeatedForwardA(map, new Node(0, 1), new Node(map[0].length-1, map.length-2), true, true);
-    console.log("states explored: " + globalCounter);
-    // choose random spot for end
-    // let startx = Math.floor(Math.random() * maze[0].length)*2+1
-    // let starty = Math.floor(Math.random() * maze[0].length)*2+1
-    // let endx = Math.floor(Math.random() * maze[0].length)*2+1
-    // let endy = Math.floor(Math.random() * maze[0].length)*2+1
-    // repeatedForwardA(map, new Node(startx, starty), new Node(endx, endy), false, true);
+    return map;
 }
 
 // turns map into maze with walls in between cells
@@ -150,7 +180,25 @@ function getMapFromMaze(maze, curX, curY) {
     map[mapW - 1][mapH - 2] = 0; // open the exit
 
     //testing
-   
+
     return map;
 }
 
+async function runtests() {
+    let results = [];
+    for (i = 0; i < 50; i++) {
+        let seed = "seed" + i;
+        let map = await generateMaze(seed, 50, 50)
+        globalCounter = 0;
+        await repeatedForwardA(map, new Node(0, 1), new Node(map[0].length - 1, map.length - 2), true, true);
+        console.log(i + " states explored: " + globalCounter);
+
+        results.push(globalCounter);
+    }
+    console.log(results)
+    let avg = 0;
+    results.forEach(r => avg += r)
+    avg /= 50;
+    console.log("average: " + avg)
+
+}

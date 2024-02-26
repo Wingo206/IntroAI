@@ -76,7 +76,7 @@ class PriorityQueue {
         //         minIndex = i;
         //     } else if (this.heap[i].f == this.heap[minIndex].f) {
         //         // prioritize lower g
-        //         if (this.heap[i].g < this.heap[minIndex].g) {
+        //         if (this.heap[i].g > this.heap[minIndex].g) {
         //             minIndex = i;
         //         }
         //     }
@@ -142,6 +142,7 @@ class PriorityQueue {
     contains(node) {
         return this.heap.some(n => n.x === node.x && n.y === node.y);
     }
+
 }
 
 function calculateHeuristic(position, goal, oldGvals) {
@@ -157,7 +158,7 @@ function calculateHeuristic(position, goal, oldGvals) {
     let dx = Math.abs(position.x - goal.x);
     let dy = Math.abs(position.y - goal.y);
 
-    // return Math.sqrt(dx * dx + dy * dy);
+    // return Math.max(Math.sqrt(dx * dx + dy * dy));
     return Math.max(dx + dy, res);
     // return dx + dy
 }
@@ -170,6 +171,15 @@ function setContains(set, node) {
         }
     }
     return false;
+}
+
+function nodeIndexOf(arr, node) {
+    for (let i = 0; i < arr.length; i++) {
+        if (arr[i].x == node.x && arr[i].y == node.y) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 function getNeighbors(currentNode, trueMap) {
@@ -232,7 +242,9 @@ async function repeatedForwardA(map, start, goal, isForward, isAdaptive) {
     let realPath = [];
     while (path !== undefined) {
 
-        await displayFollowPath(trueMap, currentNode, realPath, path);
+        if (ANIMATE) {
+            await displayFollowPath(trueMap, currentNode, realPath, path);
+        }
 
         let nextNode = path[0];
         path.splice(0, 1);
@@ -293,19 +305,20 @@ function updateSurroundings(currentNode, trueMap, map) {
 async function repeatedForwardAHelper(trueMap, start, goal, oldGvals) {
     let openList = new PriorityQueue();
     let closedList = [];
-    //displayA(trueMap);
     start.g = 0;
     start.h = calculateHeuristic(start, goal, oldGvals);
-    start.f = start.g + start.h;
+    start.f = 100000 * (start.g + start.h) - start.g;
     openList.enqueue(start); //put start into open list;
+    let goalNode = goal;
     while (!(openList.isEmpty())) {
 
         let currentNode = openList.dequeue();
-        await displayAHelper(trueMap, currentNode, start, goal, openList, closedList);
+        if (ANIMATE) {
+            await displayAHelper(trueMap, currentNode, start, goal, openList, closedList);
+        }
 
-        //trueMap[currentNode.x][currentNode.y] = 3;
-        //displayA(trueMap);
         if (currentNode.x === goal.x && currentNode.y === goal.y) {
+        // if (currentNode.g + currentNode.h >= goalNode.g) {
             // console.log("Possibly found goal");
             let path = [];
             let currentPath = currentNode;
@@ -336,17 +349,40 @@ async function repeatedForwardAHelper(trueMap, start, goal, oldGvals) {
             //     continue; // check neighbor in closed
             // }
             let nextCost = currentNode.g + 1;
-            if (!openList.contains(neighbor) && !setContains(closedList, neighbor)) { //check if in open set alredy taking this would reduce the cost or not in open set then also check
+            // if (!openList.contains(neighbor) && !setContains(closedList, neighbor)) { //check if in open set alredy taking this would reduce the cost or not in open set then also check
+            if (nextCost < neighbor.g) { //check if in open set alredy taking this would reduce the cost or not in open set then also check
                 neighbor.g = nextCost;
                 neighbor.h = calculateHeuristic(neighbor, goal, oldGvals);
                 // tie breaking
-                neighbor.f = 1000 * (neighbor.g + neighbor.h) - neighbor.g;
+                neighbor.f = 100000 * (neighbor.g + neighbor.h) - neighbor.g;
                 neighbor.parent = currentNode;
-                if (!(openList.heap.includes(neighbor))) {
+                if (neighbor.x == goal.x && neighbor.y == goal.y) {
+                    console.log("goal was found lol")
+                    goalNode = neighbor;
+                }
+                if (!openList.contains(neighbor) && !setContains(closedList, neighbor)) {
                     openList.enqueue(neighbor);
                     // openList.heap.push(neighbor)
                     //trueMap[currentNode.x][currentNode.y] = 6;
                     //displayA(trueMap);
+                } else {
+                    // // update old node
+                    let ind = nodeIndexOf(openList.heap, neighbor)
+                    if (ind != -1) {
+                        openList.heap[ind].g = nextCost;
+                        openList.heap[ind].h = calculateHeuristic(neighbor, goal, oldGvals);
+                        openList.heap[ind].f = 100000 * (neighbor.g + neighbor.h) - neighbor.g;
+                        // openList.heap[ind].parent = currentNode;
+                    } else if (ind == -1) {
+                        ind = nodeIndexOf(closedList, neighbor)
+                        if (ind != -1) {
+                            closedList[ind].g = nextCost;
+                            closedList[ind].h = calculateHeuristic(neighbor, goal, oldGvals);
+                            closedList[ind].f = 100000 * (neighbor.g + neighbor.h) - neighbor.g;
+                            // closedList[ind].parent = currentNode;
+
+                        }
+                    }
                 }
             }
 
@@ -366,7 +402,7 @@ async function displayAHelper(map, current, start, goal, openList, closedList) {
     mapCopy[start.x][start.y] = START;
     mapCopy[goal.x][goal.y] = GOAL;
     mapCopy[current.x][current.y] = CURRENTPOS;
-    updateCanvas(mapCopy);
+    updateCanvas("canvas2", mapCopy);
     await sleep(10);
 }
 
@@ -375,12 +411,12 @@ async function displayFollowPath(trueMap, currentPos, realPath, restPath) {
     realPath.forEach(n => mapCopy[n.x][n.y] = REALPATH);
     restPath.forEach(n => mapCopy[n.x][n.y] = RESTPATH);
     mapCopy[currentPos.x][currentPos.y] = CURRENTPOS;
-    updateCanvas(mapCopy);
+    updateCanvas("canvas2", mapCopy);
     await sleep(100);
 }
 
 function displayA(map) {
-    updateCanvas(map);
+    updateCanvas("canvas2", map);
 }
 
 let maze = [[0, 0, 0, 0],
