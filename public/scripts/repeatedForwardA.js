@@ -57,6 +57,7 @@ class Node {
 //Have to swap with your own heap IMPORTANT for extra credit so change later just for testing
 //need to have heap compare the h + g values
 //IMPORTANT: so does this make sense to have the main difference between the two repeated foward a* be here 
+let globalCounter = 0;
 class PriorityQueue {
     constructor() {
         this.heap = [];
@@ -68,6 +69,22 @@ class PriorityQueue {
     }
 
     dequeue() {
+        globalCounter++;
+        // let minIndex = 0;
+        // for (let i = 0; i < this.heap.length; i++) {
+        //     if (this.heap[i].f < this.heap[minIndex].f) {
+        //         minIndex = i;
+        //     } else if (this.heap[i].f == this.heap[minIndex].f) {
+        //         // prioritize lower g
+        //         if (this.heap[i].g < this.heap[minIndex].g) {
+        //             minIndex = i;
+        //         }
+        //     }
+        // }
+        // let min = this.heap[minIndex];
+        // this.heap.splice(minIndex, 1);
+        // return min;
+
         let min = this.heap[0];
         let last = this.heap.pop();
         if (this.heap.length > 0) {
@@ -127,12 +144,22 @@ class PriorityQueue {
     }
 }
 
-function caculateHeuristic(position, goal) {
+function calculateHeuristic(position, goal, oldGvals) {
+    let res = -1;
+    // check for adaptive A*
+    if (oldGvals !== undefined) {
+        let oldVal = oldGvals[position.x][position.y]
+        if (oldVal != -1) {
+            res = oldGvals[goal.x][goal.y] - oldVal;
+        }
+    }
+
     let dx = Math.abs(position.x - goal.x);
     let dy = Math.abs(position.y - goal.y);
 
     // return Math.sqrt(dx * dx + dy * dy);
-    return dx + dy
+    return Math.max(dx + dy, res);
+    // return dx + dy
 }
 
 function setContains(set, node) {
@@ -178,24 +205,29 @@ async function displayA(map) {
     updateCanvas(map)
 }
 
-async function repeatedForwardA(map, start, goal) {
+async function repeatedForwardA(map, start, goal, isForward, isAdaptive) {
     await (new Promise(r => setTimeout(r, 1000)));
     let trueMap = Array.from(Array(map.length), _ => Array(map[0].length).fill(0).map(_ => 2)); // Initialize each row individually
     let path;
     let currentNode;
+    // setup storage of old s values for adaptive
+    let oldGvals;
+    if (isAdaptive) {
+        oldGvals = Array.from(Array(map.length), _ => Array(map[0].length).fill(0).map(_ => -1));
+    }
     if (isForward) {
         trueMap[start.x][start.y] = START;
         trueMap[goal.x][goal.y] = GOAL;
         currentNode = start;
         updateSurroundings(start, trueMap, map);
-        path = await repeatedForwardAHelper(trueMap, start, goal);
+        path = await repeatedForwardAHelper(trueMap, start, goal, oldGvals);
     }
     else { //FOR BACKWARDS IMPLEMENTATION
         trueMap[start.x][start.y] = GOAL;
         trueMap[goal.x][goal.y] = START;
         currentNode = goal;
         updateSurroundings(goal, trueMap, map);
-        path = (await repeatedForwardAHelper(trueMap, goal, start)).reverse();
+        path = (await repeatedForwardAHelper(trueMap, goal, start, oldGvals)).reverse();
     }
     let realPath = [];
     while (path !== undefined) {
@@ -207,16 +239,16 @@ async function repeatedForwardA(map, start, goal) {
 
         // check next node
         if (nextNode.x >= 0 && nextNode.y >= 0 && map[nextNode.x][nextNode.y] == WALL) {
-            console.log("Didn't reach the goal, hit a wall");
+            // console.log("Didn't reach the goal, hit a wall");
             if (isForward) {
-                path = await repeatedForwardAHelper(trueMap, currentNode, goal); 
+                path = await repeatedForwardAHelper(trueMap, currentNode, goal, oldGvals);
             }
             else {
-                path = (await repeatedForwardAHelper(trueMap, goal, currentNode)).reverse();
+                path = (await repeatedForwardAHelper(trueMap, goal, currentNode, oldGvals)).reverse();
             }
             continue;
         }
-        else if (trueMap[nextNode.x][nextNode.y] == ((isForward) ? GOAL:START)) {
+        else if (trueMap[nextNode.x][nextNode.y] == ((isForward) ? GOAL : START)) {
             console.log("Reached the goal, yay");
             realPath.push(currentNode);
             realPath.push(nextNode);
@@ -258,24 +290,23 @@ function updateSurroundings(currentNode, trueMap, map) {
 
 
 //is map unknown or known one when inputting, start is node, and goal is node
-async function repeatedForwardAHelper(trueMap, start, goal) {
+async function repeatedForwardAHelper(trueMap, start, goal, oldGvals) {
     let openList = new PriorityQueue();
     let closedList = [];
     //displayA(trueMap);
     start.g = 0;
-    start.h = caculateHeuristic(start, goal);
+    start.h = calculateHeuristic(start, goal, oldGvals);
     start.f = start.g + start.h;
     openList.enqueue(start); //put start into open list;
     while (!(openList.isEmpty())) {
 
         let currentNode = openList.dequeue();
-        displayAHelper(trueMap, currentNode, start, goal, openList, closedList);
-        await sleep(10);
+        await displayAHelper(trueMap, currentNode, start, goal, openList, closedList);
 
         //trueMap[currentNode.x][currentNode.y] = 3;
         //displayA(trueMap);
         if (currentNode.x === goal.x && currentNode.y === goal.y) {
-            console.log("Possibly found goal");
+            // console.log("Possibly found goal");
             let path = [];
             let currentPath = currentNode;
             while (currentPath != null) {
@@ -286,6 +317,12 @@ async function repeatedForwardAHelper(trueMap, start, goal) {
                     break;
                 }
                 currentPath = currentPath.parent;
+            }
+            // if adaptive, give array of g vals
+            if (oldGvals !== undefined) {
+                openList.heap.forEach(n => oldGvals[n.x][n.y] = n.g);
+                closedList.forEach(n => oldGvals[n.x][n.y] = n.g);
+                oldGvals[goal.x][goal.y] = currentNode.g + 1;
             }
             return path;
         }
@@ -301,7 +338,7 @@ async function repeatedForwardAHelper(trueMap, start, goal) {
             let nextCost = currentNode.g + 1;
             if (!openList.contains(neighbor) && !setContains(closedList, neighbor)) { //check if in open set alredy taking this would reduce the cost or not in open set then also check
                 neighbor.g = nextCost;
-                neighbor.h = caculateHeuristic(neighbor, goal);
+                neighbor.h = calculateHeuristic(neighbor, goal, oldGvals);
                 // tie breaking
                 neighbor.f = 1000 * (neighbor.g + neighbor.h) - neighbor.g;
                 neighbor.parent = currentNode;
@@ -316,13 +353,13 @@ async function repeatedForwardAHelper(trueMap, start, goal) {
             // check if neighbor is open list
             //if node that is in open set g is greater than the new g update the value with minimum
             //say its not in the open set
-            //let neighborNode = new Node(neighbors[i][0], neighbors[i],[1], (currentNode.getG + 1),caculateHeuristic(neighbors[i],goal));
+            //let neighborNode = new Node(neighbors[i][0], neighbors[i],[1], (currentNode.getG + 1),calculateHeuristic(neighbors[i],goal));
         }
     }
     console.log("Finished a*, no goal found");
 }
 
-function displayAHelper(map, current, start, goal, openList, closedList) {
+async function displayAHelper(map, current, start, goal, openList, closedList) {
     let mapCopy = makeCopy(map);
     closedList.forEach(n => mapCopy[n.x][n.y] = CLOSED)
     openList.heap.forEach(n => mapCopy[n.x][n.y] = OPEN)
@@ -330,6 +367,7 @@ function displayAHelper(map, current, start, goal, openList, closedList) {
     mapCopy[goal.x][goal.y] = GOAL;
     mapCopy[current.x][current.y] = CURRENTPOS;
     updateCanvas(mapCopy);
+    await sleep(10);
 }
 
 async function displayFollowPath(trueMap, currentPos, realPath, restPath) {

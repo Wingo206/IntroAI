@@ -106,19 +106,25 @@ async function generateMaze() {
 
     updateCanvas(getMapFromMaze(maze, curX, curY));
 
+    //forward
     let map = getMapFromMaze(maze, curX, curY);
     await sleep(sleepTime)    
-<<<<<<< HEAD
-    // repeatedForwardA(map, new Node(0, 1), new Node(map[0].length-1, map.length-2));
+    globalCounter = 0;
+    await repeatedForwardA(map, new Node(0, 1), new Node(map[0].length-1, map.length-2), true, false);
+    console.log("states explored: " + globalCounter);
+
+    //adaptive
+    map = getMapFromMaze(maze, curX, curY);
+    await sleep(sleepTime)    
+    globalCounter = 0;
+    await repeatedForwardA(map, new Node(0, 1), new Node(map[0].length-1, map.length-2), true, true);
+    console.log("states explored: " + globalCounter);
     // choose random spot for end
-    let startx = Math.floor(Math.random() * maze[0].length)*2+1
-    let starty = Math.floor(Math.random() * maze[0].length)*2+1
-    let endx = Math.floor(Math.random() * maze[0].length)*2+1
-    let endy = Math.floor(Math.random() * maze[0].length)*2+1
-    repeatedForwardA(map, new Node(startx, starty), new Node(endx, endy));
-=======
-    repeatedForwardA(map, new Node(0, 1), new Node(map[0].length-1, map.length-2), false);
->>>>>>> 28e46dbe42c9a8e2ab0c912d3749789100172c18
+    // let startx = Math.floor(Math.random() * maze[0].length)*2+1
+    // let starty = Math.floor(Math.random() * maze[0].length)*2+1
+    // let endx = Math.floor(Math.random() * maze[0].length)*2+1
+    // let endy = Math.floor(Math.random() * maze[0].length)*2+1
+    // repeatedForwardA(map, new Node(startx, starty), new Node(endx, endy), false, true);
 }
 
 // turns map into maze with walls in between cells
