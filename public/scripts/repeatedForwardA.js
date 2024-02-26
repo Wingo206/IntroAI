@@ -68,7 +68,7 @@ class PriorityQueue {
         this.bubbleUp();
     }
 
-    dequeue() {
+    dequeue(index) {
         globalCounter++;
         // let minIndex = 0;
         // for (let i = 0; i < this.heap.length; i++) {
@@ -85,11 +85,11 @@ class PriorityQueue {
         // this.heap.splice(minIndex, 1);
         // return min;
 
-        let min = this.heap[0];
+        let min = this.heap[index];
         let last = this.heap.pop();
         if (this.heap.length > 0) {
-            this.heap[0] = last;
-            this.bubbleDown();
+            this.heap[index] = last;
+            this.bubbleDown(index);
         }
         return min;
     }
@@ -106,8 +106,7 @@ class PriorityQueue {
         }
     }
 
-    bubbleDown() {
-        let index = 0;
+    bubbleDown(index) {
         let length = this.heap.length;
         while (true) {
             let leftChildIndex = 2 * index + 1;
@@ -160,8 +159,8 @@ function calculateHeuristic(position, goal, oldGvals, goalVal) {
     let dy = Math.abs(position.y - goal.y);
 
     // return Math.max(Math.sqrt(dx * dx + dy * dy));
-    //return Math.max(dx + dy, res);
-    return dx + dy
+    return Math.max(dx + dy, res);
+    // return dx + dy
 }
 
 function setContains(set, node) {
@@ -183,7 +182,7 @@ function nodeIndexOf(arr, node) {
     return -1;
 }
 
-function getNeighbors(currentNode, trueMap) {
+function getNeighborsold(currentNode, trueMap) {
     const directions = [[1, 0], [0, 1], [-1, 0], [0, -1]];
     let validDirections = [];
     for (let d = 0; d < directions.length; d++) {
@@ -193,6 +192,25 @@ function getNeighbors(currentNode, trueMap) {
         if (neighX >= 0 && neighY >= 0 && neighX < trueMap.length && neighY < trueMap[0].length && trueMap[neighX][neighY] != 1) { //check if its valid space in maze
             validDirections.push(new Node(neighX, neighY));
         }
+    }
+    return validDirections;
+}
+
+function getNeighbors(currentNode, trueMap, nodes) {
+    const directions = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+    const validDirections = [];
+    for (let d = 0; d < directions.length; d++) {
+        let dir = directions[d];
+        let nx = currentNode.x + dir[0];
+        let ny = currentNode.y + dir[1];
+        if (nx < 0 || nx >= nodes.length || ny < 0 || ny >= nodes[0].length) {
+            continue;
+        }
+        if (trueMap[nx][ny] == WALL) {
+            continue;
+        }
+        validDirections.push(nodes[nx][ny])
+
     }
     return validDirections;
 }
@@ -304,48 +322,63 @@ function updateSurroundings(currentNode, trueMap, map) {
 
 //is map unknown or known one when inputting, start is node, and goal is node
 async function repeatedForwardAHelper(trueMap, start, goal, oldGvals) {
+    // create grid of nodes
+    let nodes = [];
+    for (let x = 0; x < trueMap.length; x++) {
+        let row = [];
+        for (let y = 0; y < trueMap.length; y++) {
+            row.push(new Node(x, y));
+        }
+        nodes.push(row);
+    }
     let openList = new PriorityQueue();
     let closedList = [];
+    nodes[start.x][start.y] = start;
+    nodes[goal.x][goal.y] = goal;
     start.g = 0;
     start.h = calculateHeuristic(start, goal, oldGvals);
     start.f = 100000 * (start.g + start.h) - start.g;
-    openList.enqueue(start); //put start into open list;
-    let goalNode = goal;
-    while (!(openList.isEmpty())) {
+    openList.enqueue(start);
+    goal.g = 1000000
+    goal.h = 0;
+    goal.f = 100000 * (goal.g + goal.h) - goal.g;
+    // while (!(openList.isEmpty())) {
+    while (openList.heap.length > 0  && goal.f > openList.heap[0].f) {
 
-        let currentNode = openList.dequeue();
+        let currentNode = openList.dequeue(0);
         if (ANIMATE) {
             await displayAHelper(trueMap, currentNode, start, goal, openList, closedList);
         }
-
-        if (currentNode.x === goal.x && currentNode.y === goal.y) {
-        // if (currentNode.g + currentNode.h >= goalNode.g) {
-            // console.log("Possibly found goal");
-            let path = [];
-            let currentPath = currentNode;
-            while (currentPath != null) {
-                //add nodes to the path instead pls
-                path.unshift(currentPath); //add to the beginning
-                // check if we hit the start
-                if (currentPath == start) {
-                    break;
-                }
-                currentPath = currentPath.parent;
-            }
-            // if adaptive, give array of g vals
-            if (oldGvals !== undefined) {
-                //openList.heap.forEach(n => oldGvals[n.x][n.y] = n.g);
-                closedList.forEach(n => oldGvals[n.x][n.y] = n.g);
-                oldGvals[goal.x][goal.y] = goal.g;
-                console.log(goal.g)
-            }
-            return path;
-        }
         closedList.push(currentNode);
+
+        //if (currentNode.x === goal.x && currentNode.y === goal.y) {
+        //    // if (currentNode.g + currentNode.h >= goalNode.g) {
+        //    // console.log("Possibly found goal");
+        //    let path = [];
+        //    let currentPath = currentNode;
+        //    while (currentPath != null) {
+        //        //add nodes to the path instead pls
+        //        path.unshift(currentPath); //add to the beginning
+        //        // check if we hit the start
+        //        if (currentPath == start) {
+        //            break;
+        //        }
+        //        currentPath = currentPath.parent;
+        //    }
+        //    // if adaptive, give array of g vals
+        //    if (oldGvals !== undefined) {
+        //        //openList.heap.forEach(n => oldGvals[n.x][n.y] = n.g);
+        //        closedList.forEach(n => oldGvals[n.x][n.y] = n.g);
+        //        oldGvals[goal.x][goal.y] = goal.g;
+        //        console.log(goal.g)
+        //    }
+        //    return path;
+        //}
+        // closedList.push(currentNode);
         //trueMap[currentNode.x][currentNode.y] = 7;
         //displayA(trueMap);
 
-        let neighbors = getNeighbors(currentNode, trueMap);
+        let neighbors = getNeighbors(currentNode, trueMap, nodes);
         for (let neighbor of neighbors) {
             // if (setContains(closedList, neighbor)) {
             //     continue; // check neighbor in closed
@@ -358,34 +391,39 @@ async function repeatedForwardAHelper(trueMap, start, goal, oldGvals) {
                 // tie breaking
                 neighbor.f = 100000 * (neighbor.g + neighbor.h) - neighbor.g;
                 neighbor.parent = currentNode;
-                if (neighbor.x == goal.x && neighbor.y == goal.y) {
-                    //console.log("goal was found lol")
-                    goalNode = neighbor;
+                if (openList.contains(neighbor)) {
+                    openList.dequeue(nodeIndexOf(openList.heap, neighbor));
                 }
-                if (!openList.contains(neighbor) && !setContains(closedList, neighbor)) {
-                    openList.enqueue(neighbor);
-                    // openList.heap.push(neighbor)
-                    //trueMap[currentNode.x][currentNode.y] = 6;
-                    //displayA(trueMap);
-                } else {
-                    // // update old node
-                    let ind = nodeIndexOf(openList.heap, neighbor)
-                    if (ind != -1) {
-                        openList.heap[ind].g = nextCost;
-                        openList.heap[ind].h = calculateHeuristic(neighbor, goal, oldGvals);
-                        openList.heap[ind].f = 100000 * (neighbor.g + neighbor.h) - neighbor.g;
-                        // openList.heap[ind].parent = currentNode;
-                    } else if (ind == -1) {
-                        ind = nodeIndexOf(closedList, neighbor)
-                        if (ind != -1) {
-                            closedList[ind].g = nextCost;
-                            closedList[ind].h = calculateHeuristic(neighbor, goal, oldGvals);
-                            closedList[ind].f = 100000 * (neighbor.g + neighbor.h) - neighbor.g;
-                            // closedList[ind].parent = currentNode;
 
-                        }
-                    }
-                }
+                openList.enqueue(neighbor);
+                //if (neighbor.x == goal.x && neighbor.y == goal.y) {
+                //    //console.log("goal was found lol")
+                //    goalNode = neighbor;
+                //}
+                //if (!openList.contains(neighbor) && !setContains(closedList, neighbor)) {
+                //    openList.enqueue(neighbor);
+                //    // openList.heap.push(neighbor)
+                //    //trueMap[currentNode.x][currentNode.y] = 6;
+                //    //displayA(trueMap);
+                //} else {
+                //    // // update old node
+                //    let ind = nodeIndexOf(openList.heap, neighbor)
+                //    if (ind != -1) {
+                //        openList.heap[ind].g = nextCost;
+                //        openList.heap[ind].h = calculateHeuristic(neighbor, goal, oldGvals);
+                //        openList.heap[ind].f = 100000 * (neighbor.g + neighbor.h) - neighbor.g;
+                //        // openList.heap[ind].parent = currentNode;
+                //    } else if (ind == -1) {
+                //        ind = nodeIndexOf(closedList, neighbor)
+                //        if (ind != -1) {
+                //            closedList[ind].g = nextCost;
+                //            closedList[ind].h = calculateHeuristic(neighbor, goal, oldGvals);
+                //            closedList[ind].f = 100000 * (neighbor.g + neighbor.h) - neighbor.g;
+                //            // closedList[ind].parent = currentNode;
+
+                //        }
+                //    }
+                //}
             }
 
             // check if neighbor is open list
@@ -393,6 +431,27 @@ async function repeatedForwardAHelper(trueMap, start, goal, oldGvals) {
             //say its not in the open set
             //let neighborNode = new Node(neighbors[i][0], neighbors[i],[1], (currentNode.getG + 1),calculateHeuristic(neighbors[i],goal));
         }
+    }
+    if (goal.parent !== null) {
+           let path = [];
+           let currentPath = goal;
+           while (currentPath != null) {
+               //add nodes to the path instead pls
+               path.unshift(currentPath); //add to the beginning
+               // check if we hit the start
+               if (currentPath == start) {
+                   break;
+               }
+               currentPath = currentPath.parent;
+           }
+           // if adaptive, give array of g vals
+           if (oldGvals !== undefined) {
+               //openList.heap.forEach(n => oldGvals[n.x][n.y] = n.g);
+               closedList.forEach(n => oldGvals[n.x][n.y] = n.g);
+               oldGvals[goal.x][goal.y] = goal.g;
+               // console.log(goal.g)
+           }
+           return path;
     }
     console.log("Finished a*, no goal found");
 }

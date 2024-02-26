@@ -1,4 +1,4 @@
-const ANIMATE = false;
+const ANIMATE = true;
 const FORWARD = true;
 const ADAPTIVE = true;
 
