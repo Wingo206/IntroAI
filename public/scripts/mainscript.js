@@ -63,22 +63,9 @@ async function generateMazeButton() {
     globalCounter = 0;
     await repeatedForwardA(map, new Node(0, 1), new Node(map[0].length - 1, map.length - 2), FORWARD, ADAPTIVE);
     console.log("states explored: " + globalCounter);
-
-    ////adaptive
-    //map = getMapFromMaze(maze, curX, curY);
-    //await sleep(sleepTime)    
-    //globalCounter = 0;
-    //await repeatedForwardA(map, new Node(0, 1), new Node(map[0].length-1, map.length-2), true, true);
-    //console.log("states explored: " + globalCounter);
-    // choose random spot for end
-    // let startx = Math.floor(Math.random() * maze[0].length)*2+1
-    // let starty = Math.floor(Math.random() * maze[0].length)*2+1
-    // let endx = Math.floor(Math.random() * maze[0].length)*2+1
-    // let endy = Math.floor(Math.random() * maze[0].length)*2+1
-    // repeatedForwardA(map, new Node(startx, starty), new Node(endx, endy), false, true);
 }
 
-async function generateMazebad(seedString, mazeWidth, mazeHeight) {
+async function generateMazeSpots(seedString, mazeWidth, mazeHeight) {
     let seed = cyrb128(seedString);
     let rand = splitmix32(seed[0]);
     mazeWidth = mazeWidth * 2 + 1
@@ -181,8 +168,6 @@ function getMapFromMaze(maze, curX, curY) {
     map[2 * curX + 1][2 * curY + 1] = 3
     map[mapW - 1][mapH - 2] = 0; // open the exit
 
-    //testing
-
     return map;
 }
 
@@ -203,5 +188,4 @@ async function runtests() {
     results.forEach(r => avg += r)
     avg /= 50;
     console.log("average: " + avg)
-
 }
