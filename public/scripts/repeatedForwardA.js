@@ -1,4 +1,3 @@
-console.log("repeatBroga");
 //let trueMap = [];
 
 //IMPORTANT, do i know the goal and start for the mazes??
@@ -202,12 +201,13 @@ function makeCopy(map) {
 }
 
 async function repeatedForwardA(map, start, goal, isForward, isAdaptive) {
-    await (new Promise(r => setTimeout(r, 1000)));
+    // await (new Promise(r => setTimeout(r, 1000)));
     let trueMap = Array.from(Array(map.length), _ => Array(map[0].length).fill(0).map(_ => 2)); // Initialize each row individually
     let path;
     let currentNode;
     // setup storage of old s values for adaptive
     let oldGvals;
+    let realPath = [];
     if (isAdaptive) {
         oldGvals = Array.from(Array(map.length), _ => Array(map[0].length).fill(0).map(_ => -1));
     }
@@ -216,20 +216,20 @@ async function repeatedForwardA(map, start, goal, isForward, isAdaptive) {
         trueMap[goal.x][goal.y] = GOAL;
         currentNode = start;
         updateSurroundings(start, trueMap, map);
-        path = await repeatedForwardAHelper(trueMap, start, goal, oldGvals);
+        path = await repeatedForwardAHelper(trueMap, start, goal, oldGvals, realPath);
     }
     else { //FOR BACKWARDS IMPLEMENTATION
         trueMap[start.x][start.y] = GOAL;
         trueMap[goal.x][goal.y] = START;
         currentNode = goal;
         updateSurroundings(goal, trueMap, map);
-        path = (await repeatedForwardAHelper(trueMap, goal, start, oldGvals)).reverse();
+        path = (await repeatedForwardAHelper(trueMap, goal, start, oldGvals, realPath)).reverse();
     }
-    let realPath = [];
     while (path !== undefined) {
 
         if (ANIMATE) {
-            await displayFollowPath(trueMap, currentNode, realPath, path);
+            // await displayFollowPath(trueMap, currentNode, realPath, path);
+            await speedControlled(() => displayFollowPath(trueMap, currentNode, realPath, path))
         }
 
         let nextNode = path[0];
@@ -239,15 +239,14 @@ async function repeatedForwardA(map, start, goal, isForward, isAdaptive) {
         if (nextNode.x >= 0 && nextNode.y >= 0 && map[nextNode.x][nextNode.y] == WALL) {
             // console.log("Didn't reach the goal, hit a wall");
             if (isForward) {
-                path = await repeatedForwardAHelper(trueMap, currentNode, goal, oldGvals);
+                path = await repeatedForwardAHelper(trueMap, currentNode, goal, oldGvals, realPath);
             }
             else {
-                path = (await repeatedForwardAHelper(trueMap, goal, currentNode, oldGvals)).reverse();
+                path = (await repeatedForwardAHelper(trueMap, goal, currentNode, oldGvals, realPath)).reverse();
             }
             continue;
         }
         else if (trueMap[nextNode.x][nextNode.y] == ((isForward) ? GOAL : START)) {
-            console.log("Reached the goal, yay");
             realPath.push(currentNode);
             realPath.push(nextNode);
             displayFollowPath(trueMap, nextNode, realPath, path);
@@ -288,12 +287,12 @@ function updateSurroundings(currentNode, trueMap, map) {
 
 
 //is map unknown or known one when inputting, start is node, and goal is node
-async function repeatedForwardAHelper(trueMap, start, goal, oldGvals) {
+async function repeatedForwardAHelper(trueMap, start, goal, oldGvals, realPath) {
     // create grid of nodes
     let nodes = [];
     for (let x = 0; x < trueMap.length; x++) {
         let row = [];
-        for (let y = 0; y < trueMap.length; y++) {
+        for (let y = 0; y < trueMap[0].length; y++) {
             row.push(new Node(x, y));
         }
         nodes.push(row);
@@ -313,7 +312,8 @@ async function repeatedForwardAHelper(trueMap, start, goal, oldGvals) {
 
         let currentNode = openList.dequeue(0);
         if (ANIMATE) {
-            await displayAHelper(trueMap, currentNode, start, goal, openList, closedList);
+            // await displayAHelper(trueMap, currentNode, start, goal, openList, closedList, realPath);
+            await speedControlled(() => displayAHelper(trueMap, currentNode, start, goal, openList, closedList, realPath));
         }
         closedList.push(currentNode);
 
@@ -361,15 +361,16 @@ async function repeatedForwardAHelper(trueMap, start, goal, oldGvals) {
     console.log("Finished a*, no goal found");
 }
 
-async function displayAHelper(map, current, start, goal, openList, closedList) {
+async function displayAHelper(map, current, start, goal, openList, closedList, realPath) {
     let mapCopy = makeCopy(map);
+    realPath.forEach(n => mapCopy[n.x][n.y] = REALPATH);
     closedList.forEach(n => mapCopy[n.x][n.y] = CLOSED)
     openList.heap.forEach(n => mapCopy[n.x][n.y] = OPEN)
     mapCopy[start.x][start.y] = START;
     mapCopy[goal.x][goal.y] = GOAL;
     mapCopy[current.x][current.y] = CURRENTPOS;
     updateCanvas("canvas2", mapCopy);
-    await sleep(10);
+    // await sleep(10);
 }
 
 async function displayFollowPath(trueMap, currentPos, realPath, restPath) {

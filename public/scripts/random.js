@@ -25,11 +25,11 @@ function splitmix32(a) {
     }
 }
 
-var seed = cyrb128("apples");
+// var seed = cyrb128("apples");
 
-var rand = splitmix32(seed[0]);
+// var rand = splitmix32(seed[0]);
 
-console.log(rand());
-console.log(rand());
-console.log(rand());
-console.log(rand());
+// console.log(rand());
+// console.log(rand());
+// console.log(rand());
+// console.log(rand());

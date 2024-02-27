@@ -1,9 +1,24 @@
-const ANIMATE = true;
-const FORWARD = true;
-const ADAPTIVE = true;
+let ANIMATE = true;
+let FORWARD = true;
+let ADAPTIVE = false;
+let SPEED = 10;
 
 const sleepTime = 10;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function setAnimate() {
+    ANIMATE = document.getElementById("animate").checked;
+}
+function setForward() {
+    FORWARD = document.getElementById("forward").checked;
+}
+function setAdaptive() {
+    ADAPTIVE = document.getElementById("adaptive").checked;
+}
+function test(val) {
+    SPEED = val;
+}
+
 
 function drawLine(ctx, x1, y1, x2, y2) {
     ctx.beginPath();
@@ -61,7 +76,7 @@ async function generateMazeButton() {
 
     // await sleep(sleepTime)    
     globalCounter = 0;
-    await repeatedForwardA(map, new Node(0, 1), new Node(map[0].length - 1, map.length - 2), FORWARD, ADAPTIVE);
+    await repeatedForwardA(map, new Node(0, 1), new Node(map.length - 1, map[0].length - 2), FORWARD, ADAPTIVE);
     console.log("states explored: " + globalCounter);
 }
 
@@ -71,14 +86,14 @@ async function generateMazeSpots(seedString, mazeWidth, mazeHeight) {
     mazeWidth = mazeWidth * 2 + 1
     mazeHeight = mazeHeight * 2 + 1
     let maze = Array.from(Array(mazeWidth), _ => Array(mazeHeight).fill(EMPTY));
-    for (let x = 0; x < mazeWidth-1; x++) {
+    for (let x = 0; x < mazeWidth - 1; x++) {
 
         for (let y = 0; y < mazeWidth; y++) {
             maze[x][y] = (rand() > 0.1) ? EMPTY : WALL;
         }
     }
     maze[0][1] = EMPTY
-    maze[mazeWidth-1][mazeHeight-2] = EMPTY
+    maze[mazeWidth - 1][mazeHeight - 2] = EMPTY
     updateCanvas("canvas", maze);
     return maze;
 }
@@ -107,7 +122,7 @@ async function generateMaze(seedString, mazeWidth, mazeHeight) {
             let neighX = curX + dir[0];
             let neighY = curY + dir[1];
             // check for out of bounds
-            if (neighX < 0 || neighX >= mazeWidth || neighY < 0 || neighY >= mazeWidth) {
+            if (neighX < 0 || neighX >= mazeWidth || neighY < 0 || neighY >= mazeHeight) {
                 continue;
             }
             // check if visited already
@@ -134,8 +149,9 @@ async function generateMaze(seedString, mazeWidth, mazeHeight) {
         count++;
         // uppdate the visual
         if (ANIMATE) {
-            updateCanvas("canvas", getMapFromMaze(maze, curX, curY));
-            await sleep(sleepTime)
+            // updateCanvas("canvas", getMapFromMaze(maze, curX, curY));
+            await speedControlled(() => updateCanvas("canvas", getMapFromMaze(maze, curX, curY)));
+            // await sleep(sleepTime)
         }
     }
 
@@ -178,7 +194,7 @@ async function runtests() {
         let map = await generateMaze(seed, 50, 50)
         globalCounter = 0;
         console.log(FORWARD + ", " + ADAPTIVE)
-        await repeatedForwardA(map, new Node(0, 1), new Node(map[0].length - 1, map.length - 2), FORWARD, ADAPTIVE);
+        await repeatedForwardA(map, new Node(0, 1), new Node(map.length - 1, map[0].length - 2), FORWARD, ADAPTIVE);
         console.log(i + " states explored: " + globalCounter);
 
         results.push(globalCounter);
@@ -188,4 +204,31 @@ async function runtests() {
     results.forEach(r => avg += r)
     avg /= 50;
     console.log("average: " + avg)
+}
+
+const speedMin = 0;
+const transition = 20;
+const speedMax = 100;
+let frameCounter = 0;
+let thresh = 0;
+async function speedControlled(func) {
+    if (SPEED == 0) {
+        // wait until speed is not 0 anymore
+        while (SPEED == 0) {
+            await sleep(100);
+        }
+    }
+    if (SPEED <= transition) {
+        await sleep(1000 / Math.pow(SPEED, 2));
+        func();
+    } else {
+        // frame skipping: (speed/10)^2 calls per frame
+        frameCounter++;
+        thresh = Math.pow(((SPEED-transition)/10 + 1), 3)
+        if (frameCounter > thresh) {
+            func();
+            await sleep(1);
+            frameCounter -= thresh;
+        }
+    }
 }

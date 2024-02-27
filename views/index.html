@@ -16,6 +16,21 @@
     </canvas>
 
     <fieldset class="command">
+        <legend>Options</legend>
+        <p class="command_key">Animate: </p>
+        <input id="animate" class="command_input" type="checkbox" , onclick="setAnimate()" , checked>
+        <p class="command_key">Forward: </p>
+        <input id="forward" class="command_input" type="checkbox" , onclick="setForward()" checked>
+        <p class="command_key">Adaptive: </p>
+        <input id="adaptive" class="command_input" type="checkbox" , onclick="setAdaptive()">
+    </fieldset>
+    <fieldset class="command">
+        <legend>Animation Speed</legend>
+        <input id="speed" class="command_input" type="range" , min="0" , max="100" , step="1", value="20" oninput="test(this.value)"
+            , style="width:500px">
+    </fieldset>
+
+    <fieldset class="command">
         <legend>Generate Maze</legend>
         <p class="command_key">Seed: </p>
         <input id="seed" class="command_input" type="text">
@@ -24,7 +39,6 @@
         <p class="command_key">Height: </p>
         <input id="mazeHeight" class="command_input" type="number">
         <button onclick="generateMazeButton()" class="command_button">Generate</button>
-
     </fieldset>
 
     <button onclick="runtests()">Run 50 Tests</button>
