@@ -244,6 +244,11 @@ async function repeatedForwardA(map, start, goal, isForward, isAdaptive) {
             else {
                 path = (await repeatedForwardAHelper(trueMap, goal, currentNode, oldGvals, realPath)).reverse();
             }
+            if (path === undefined) {
+                // no path was found
+                console.log("no path found");
+                return;
+            }
             continue;
         }
         else if (trueMap[nextNode.x][nextNode.y] == ((isForward) ? GOAL : START)) {
@@ -308,6 +313,7 @@ async function repeatedForwardAHelper(trueMap, start, goal, oldGvals, realPath) 
     goal.g = 1000000
     goal.h = 0;
     goal.f = 100000 * (goal.g + goal.h) - goal.g;
+    goal.parent = null
     while (openList.heap.length > 0 && goal.f > openList.heap[0].f) {
 
         let currentNode = openList.dequeue(0);

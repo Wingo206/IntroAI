@@ -184,6 +184,9 @@ function getMapFromMaze(maze, curX, curY) {
     map[2 * curX + 1][2 * curY + 1] = 3
     map[mapW - 1][mapH - 2] = 0; // open the exit
 
+    // unsolvable:
+    // map[mapW-2][mapH-2] = 1;
+
     return map;
 }
 
