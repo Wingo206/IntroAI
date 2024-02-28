@@ -69,6 +69,7 @@ class PriorityQueue {
 
     dequeue(index) {
         globalCounter++;
+        updateStatesExplored()
 
         let min = this.heap[index];
         let last = this.heap.pop();

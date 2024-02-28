@@ -76,6 +76,7 @@ async function generateMazeButton() {
 
     // await sleep(sleepTime)    
     globalCounter = 0;
+    updateStatesExplored()
     await repeatedForwardA(map, new Node(0, 1), new Node(map.length - 1, map[0].length - 2), FORWARD, ADAPTIVE);
     console.log("states explored: " + globalCounter);
 }
@@ -190,12 +191,17 @@ function getMapFromMaze(maze, curX, curY) {
     return map;
 }
 
+function updateStatesExplored() {
+    document.getElementById("statesExplored").innerHTML = "States Explored: " + globalCounter;
+}
+
 async function runtests() {
     let results = [];
     for (i = 0; i < 50; i++) {
         let seed = "seed" + i;
         let map = await generateMaze(seed, 50, 50)
         globalCounter = 0;
+        updateStatesExplored()
         console.log(FORWARD + ", " + ADAPTIVE)
         await repeatedForwardA(map, new Node(0, 1), new Node(map.length - 1, map[0].length - 2), FORWARD, ADAPTIVE);
         console.log(i + " states explored: " + globalCounter);
