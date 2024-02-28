@@ -1,43 +1,9 @@
-//let trueMap = [];
-
-//IMPORTANT, do i know the goal and start for the mazes??
-
-//fix repeated forward A*
-//These are the steps:
-// make a big a*
-// make a copy of maze that is filled with 2's
-// make a helper a*
-// return a path 
-// if the path reaches the goal, you are good
-// if you run into a wall update as you go on each node
-// rerun helper a*
-// how would i stop it????? from going on forever
-// also fix so that the start changes to the node you hit before the wall
-// Now that you fixed the previous one, you encountered a new problem with saving extra path lenght making it less optimal, explain 
-
-//second repeated forward A*
-// difference being if the f values are the same then it should break on either the g cost being higher or the g cost being lower
-
-// backward start from goal, and move goal
-
-// adaptive idk
-
-// input: map, start, end
-// true map: int 2d array
-// position: x y
-// believed map: int 2d array (0: empty, 1 wall, 2 unknown (assume is empty) )
-
-// A* procedure: input a believed map, position, goal, open, closed lists
-//   current state = position, current state is closed
-//   while (not done) 
-//     look at neighbors of current state
-//     add the neighbors that are "empty" and not closed
-//     current state = look at best one in the open list, and set that one as closed (if no more in opoen list, then no possible route)
-
-// after A*:
-// "try to follow the path"
-// reveal parts of hte true map when they are gotten to
-// if a part of our super cool path is blocked in reality, then rerun A* entirely, at your current position
+/**
+ * The Node class represents a node in the grid.
+ * 
+ * @param {Number} x The x coordinate of the node.
+ * @param {Number} y The y coordinate of the node.
+ */
 class Node {
     constructor(x, y) {
         this.parent = null;
@@ -49,14 +15,11 @@ class Node {
     }
 }
 
-// let top = 0;
-// const parent = i => ((i + 1) >>> 1) - 1; //i is the node in the binary heap, calculates the floor division of i+1 by 2, -1 gives index of parent 
-// const left = i => (i << 1) + 1;
-// const right = i => (i + 1) << 1;
-//Have to swap with your own heap IMPORTANT for extra credit so change later just for testing
-//need to have heap compare the h + g values
-//IMPORTANT: so does this make sense to have the main difference between the two repeated foward a* be here 
 let globalCounter = 0;
+
+/**
+ * The PriorityQueue class represents a priority queue. This is used for the A* algorithm. The queue is implemented as a binary heap, which is a complete binary tree where each node is less than or equal to its children.
+ */
 class PriorityQueue {
     constructor() {
         this.heap = [];
@@ -130,6 +93,15 @@ class PriorityQueue {
 
 }
 
+/**
+ * The calculateHeuristic function calculates the heuristic value for the A* algorithm. The heuristic value is the estimated cost to move from the current node to the goal node. The heuristic value is calculated using the Manhattan distance. The same function is used for both the forward, backward, and adaptive A* algorithms.
+ * 
+ * @param {Node} position The current position.
+ * @param {Node} goal The goal position.
+ * @param {Array} oldGvals The old g-values for the adaptive A* algorithm.
+ * @param {Number} goalVal The goal value for the adaptive A* algorithm.
+ * @returns {Number} The heuristic value.
+ */
 function calculateHeuristic(position, goal, oldGvals, goalVal) {
     let res = -1;
     // check for adaptive A*
@@ -149,6 +121,13 @@ function calculateHeuristic(position, goal, oldGvals, goalVal) {
     // return dx + dy
 }
 
+/**
+ * The setContains function checks if a set contains a node. This is used to check if a node is in the open or closed list in the A* algorithm.
+ * 
+ * @param {Array} set The set to check.
+ * @param {Node} node The node to check for.
+ * @returns {Boolean} True if the set contains the node, false otherwise.
+ */
 function setContains(set, node) {
     for (let i = 0; i < set.length; i++) {
         let n = set[i]
@@ -159,6 +138,13 @@ function setContains(set, node) {
     return false;
 }
 
+/**
+ * The nodeIndexOf function gets the index of a node in an array of nodes. This is used to get the index of a node in the open or closed list in the A* algorithm. If the node is not in the array, -1 is returned.
+ * 
+ * @param {Array} arr The array of nodes to search.
+ * @param {Node} node The node to search for.
+ * @returns {Number} The index of the node in the array, or -1 if the node is not in the array.
+ */
 function nodeIndexOf(arr, node) {
     for (let i = 0; i < arr.length; i++) {
         if (arr[i].x == node.x && arr[i].y == node.y) {
@@ -168,6 +154,14 @@ function nodeIndexOf(arr, node) {
     return -1;
 }
 
+/**
+ * The getNeighbors function gets the neighbors of a node. This is used to get the neighbors of the current node in the A* algorithm. The neighbors are the nodes that are adjacent to the current node and are not walls.
+ * 
+ * @param {Node} currentNode The current node.
+ * @param {Array} trueMap The true map of the maze.
+ * @param {Array} nodes The grid of nodes.
+ * @returns {Array} An array of the neighbors of the current node.
+ */
 function getNeighbors(currentNode, trueMap, nodes) {
     const directions = [[1, 0], [0, 1], [-1, 0], [0, -1]];
     const validDirections = [];
@@ -187,6 +181,12 @@ function getNeighbors(currentNode, trueMap, nodes) {
     return validDirections;
 }
 
+/**
+ * The makeCopy function makes a copy of a 2D array. This is used to make a copy of the true map of the maze. The copy is used to keep track of the true map as the A* algorithm runs. The copy is updated as the algorithm runs, and is used to display the true map as the algorithm runs.
+ * 
+ * @param {Array} map The 2D array to copy.
+ * @returns {Array} A copy of the 2D array.
+ */
 function makeCopy(map) {
     // let copy = Array.from(Array(map.length), _ => Array(map[0].length).fill(0)); // Initialize each row individually
     // return copy.map((_, i) => map[i].map(n => n));
@@ -201,6 +201,16 @@ function makeCopy(map) {
     return copy;
 }
 
+/**
+ * The repeatedForwardA function runs the repeated forward A* algorithm. The algorithm is used to find the shortest path from the start node to the goal node in the maze. The algorithm uses the A* algorithm to find the shortest path, and then updates the true map of the maze as it runs. The algorithm is run repeatedly until the goal node is reached. The algorithm can be run in forward or backward mode, and can be run with or without adaptive A*.
+ * 
+ * @param {Array} map The map of the maze.
+ * @param {Node} start The start node.
+ * @param {Node} goal The goal node.
+ * @param {Boolean} isForward True if the algorithm is run in forward mode, false if the algorithm is run in backward mode.
+ * @param {Boolean} isAdaptive True if the algorithm is run with adaptive A*, false if the algorithm is run without adaptive A*.
+ * @returns {Array} The shortest path from the start node to the goal node.
+ */
 async function repeatedForwardA(map, start, goal, isForward, isAdaptive) {
     // await (new Promise(r => setTimeout(r, 1000)));
     let trueMap = Array.from(Array(map.length), _ => Array(map[0].length).fill(0).map(_ => 2)); // Initialize each row individually
@@ -271,6 +281,13 @@ async function repeatedForwardA(map, start, goal, isForward, isAdaptive) {
     return realPath;
 }
 
+/**
+ * The updateSurroundings function updates the true map of the maze as the A* algorithm runs. The function updates the true map with the values of the map as the algorithm runs. The function is used to update the true map as the algorithm runs, and is used to display the true map as the algorithm runs.
+ * 
+ * @param {Node} currentNode The current node.
+ * @param {Array} trueMap The true map of the maze.
+ * @param {Array} map The map of the maze.
+ */
 function updateSurroundings(currentNode, trueMap, map) {
 
     const directions = [[1, 0], [0, 1], [-1, 0], [0, -1]];
@@ -293,6 +310,16 @@ function updateSurroundings(currentNode, trueMap, map) {
 
 
 //is map unknown or known one when inputting, start is node, and goal is node
+/**
+ * The repeatedForwardAHelper function helps the repeated forward A* algorithm.
+ * 
+ * @param {Array} trueMap The true map of the maze.
+ * @param {Node} start The start node.
+ * @param {Node} goal The goal node.
+ * @param {Array} oldGvals The old g-values for the adaptive A* algorithm.
+ * @param {Array} realPath The real path of the maze.
+ * @returns {Array} The shortest path from the start node to the goal node.
+ */
 async function repeatedForwardAHelper(trueMap, start, goal, oldGvals, realPath) {
     // create grid of nodes
     let nodes = [];
@@ -368,6 +395,17 @@ async function repeatedForwardAHelper(trueMap, start, goal, oldGvals, realPath) 
     console.log("Finished a*, no goal found");
 }
 
+/**
+ * The displayAHelper function displays the A* algorithm as it runs. The function displays the true map of the maze as the A* algorithm runs. The function is used to display the true map as the algorithm runs.
+ * 
+ * @param {Array} map The true map of the maze.
+ * @param {Node} current The current node.
+ * @param {Node} start The start node.
+ * @param {Node} goal The goal node.
+ * @param {Array} openList The open list.
+ * @param {Array} closedList The closed list.
+ * @param {Array} realPath The real path of the maze.
+ */
 async function displayAHelper(map, current, start, goal, openList, closedList, realPath) {
     let mapCopy = makeCopy(map);
     realPath.forEach(n => mapCopy[n.x][n.y] = REALPATH);
@@ -380,6 +418,14 @@ async function displayAHelper(map, current, start, goal, openList, closedList, r
     // await sleep(10);
 }
 
+/**
+ * The displayFollowPath function displays the path as it is followed. The function displays the true map of the maze as the path is followed. The function is used to display the true map as the path is followed.
+ * 
+ * @param {Array} trueMap The true map of the maze.
+ * @param {Node} currentPos The current position.
+ * @param {Array} realPath The real path of the maze.
+ * @param {Array} restPath The rest of the path.
+ */
 async function displayFollowPath(trueMap, currentPos, realPath, restPath) {
     let mapCopy = makeCopy(trueMap);
     realPath.forEach(n => mapCopy[n.x][n.y] = REALPATH);
@@ -389,6 +435,11 @@ async function displayFollowPath(trueMap, currentPos, realPath, restPath) {
     await sleep(100);
 }
 
+/**
+ * The displayA function displays the A* algorithm as it runs. The function displays the true map of the maze as the A* algorithm runs. The function is used to display the true map as the algorithm runs.
+ * 
+ * @param {Array} map The true map of the maze.
+ */
 function displayA(map) {
     updateCanvas("canvas2", map);
 }

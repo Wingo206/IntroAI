@@ -1,3 +1,8 @@
+/**
+ * This method generates a random number based on the given seed, and returns a function that can be called to get the next random number.
+ * @param {String} str The seed to use for the random number generator.
+ * @returns {Function} A function that can be called to get the next random number.
+ */
 function cyrb128(str) {
     let h1 = 1779033703, h2 = 3144134277,
         h3 = 1013904242, h4 = 2773480762;

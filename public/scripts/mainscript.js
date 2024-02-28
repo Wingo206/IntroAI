@@ -1,3 +1,9 @@
+/**
+ * This file contains the main script to run the A* algorithm and generate the maze. In addition, it contains the functions to visualize the maze, the path, and the algorithm's progress.
+ * 
+ * @author Brandon Cheng, Arya Shetty, Damon Lin
+ */
+
 let ANIMATE = true;
 let FORWARD = true;
 let ADAPTIVE = false;
@@ -19,7 +25,14 @@ function test(val) {
     SPEED = val;
 }
 
-
+/**
+ * This function draws a line on the canvas.
+ * @param {CanvasRenderingContext2D} ctx The context of the canvas to draw on.
+ * @param {Number} x1 The x-coordinate of the starting point of the line.
+ * @param {Number} y1 The y-coordinate of the starting point of the line.
+ * @param {Number} x2 The x-coordinate of the ending point of the line.
+ * @param {Number} y2 The y-coordinate of the ending point of the line.
+ */
 function drawLine(ctx, x1, y1, x2, y2) {
     ctx.beginPath();
     ctx.moveTo(x1, y1);
@@ -40,6 +53,12 @@ const CLOSED = 7; // cyan
 const REALPATH = 8 // pink
 const RESTPATH = 9 // purple
 
+/**
+ * This function updates the canvas with the given map.
+ * 
+ * @param {String} id The id of the canvas to update.
+ * @param {Array} map The map to update the canvas with.
+ */
 function updateCanvas(id, map) {
     let canvas = document.getElementById(id);
     let ctx = canvas.getContext("2d");
@@ -68,6 +87,9 @@ function updateCanvas(id, map) {
 // right, up, left, down
 const directions = [[1, 0], [0, 1], [-1, 0], [0, -1]];
 
+/**
+ * The generateMazeButton function reads the seed, width, and height from the input fields, and then generates the maze. It is called when the "Generate Maze" button is clicked.
+ */
 async function generateMazeButton() {
     let seedString = document.getElementById("seed").value;
     let mazeWidth = Number(document.getElementById("mazeWidth").value);
@@ -81,6 +103,9 @@ async function generateMazeButton() {
     console.log("states explored: " + globalCounter);
 }
 
+/**
+ * The generateMazeSpots function reads the seed, width, and height from the input fields, and then generates the maze. It is called when the "Generate Maze" button is clicked.
+ */
 async function generateMazeSpots(seedString, mazeWidth, mazeHeight) {
     let seed = cyrb128(seedString);
     let rand = splitmix32(seed[0]);
@@ -99,6 +124,15 @@ async function generateMazeSpots(seedString, mazeWidth, mazeHeight) {
     return maze;
 }
 // reads size from the input fields, then generates the maze
+
+/**
+ * The generateMaze function generates a maze based on the given seed, width, and height.
+ * 
+ * @param {String} seedString The seed to use for the random number generator.
+ * @param {Number} mazeWidth The width of the maze to generate.
+ * @param {Number} mazeHeight The height of the maze to generate.
+ * @returns {Array} The generated maze.
+ */
 async function generateMaze(seedString, mazeWidth, mazeHeight) {
     let seed = cyrb128(seedString);
     let rand = splitmix32(seed[0]);
@@ -164,6 +198,14 @@ async function generateMaze(seedString, mazeWidth, mazeHeight) {
 }
 
 // turns map into maze with walls in between cells
+/**
+ * The getMapFromMaze function turns the given maze into a map with walls in between cells. It also sets the current position and the exit.
+ * 
+ * @param {Array} maze The maze to turn into a map.
+ * @param {Number} curX The x-coordinate of the current position.
+ * @param {Number} curY The y-coordinate of the current position.
+ * @returns {Array} The map with walls in between cells.
+ */
 function getMapFromMaze(maze, curX, curY) {
     let mapW = 2 * maze.length + 1;
     let mapH = 2 * maze[0].length + 1;
@@ -185,16 +227,19 @@ function getMapFromMaze(maze, curX, curY) {
     map[2 * curX + 1][2 * curY + 1] = 3
     map[mapW - 1][mapH - 2] = 0; // open the exit
 
-    // unsolvable:
-    // map[mapW-2][mapH-2] = 1;
-
     return map;
 }
 
+/**
+ * The updateStatesExplored function updates the states explored counter on the page.
+ */
 function updateStatesExplored() {
     document.getElementById("statesExplored").innerHTML = "States Explored: " + globalCounter;
 }
 
+/**
+ * The runtests function runs the A* algorithm 50 times and prints the results to the console.
+ */
 async function runtests() {
     let results = [];
     for (i = 0; i < 50; i++) {
@@ -220,6 +265,12 @@ const transition = 20;
 const speedMax = 100;
 let frameCounter = 0;
 let thresh = 0;
+
+/**
+ * This function controls the speed of the visualization.
+ * 
+ * @param {Function} func The function to call after waiting for the speed.
+ */
 async function speedControlled(func) {
     if (SPEED == 0) {
         // wait until speed is not 0 anymore
