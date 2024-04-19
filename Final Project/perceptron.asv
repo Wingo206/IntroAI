@@ -13,7 +13,7 @@ while(ischar(line))
     increment = increment + 1;
     if (increment > 28)
         digitImagesArray(:,:,imageCounter) = currentDigitImage;
-        imageCounter = imageCounter + 1
+        imageCounter = imageCounter + 1;
         increment = 1;
         currentDigitImage = zeros(28,28);
     end
@@ -22,15 +22,30 @@ end
 %% train perceptron 
 weight = zeros(28,28,10);
 learningRate = 0.01;
+changeMade = false;
 
-for i = 1 : 2
-   predictions = zeros(10);
-   currentImage = digitImagesArray(:,:,i);
-   currentImage = repmat(currentImage, [1, 1, 10]);
-   weightTrain = currentImage .* weight;
-   predictions = sum(weightTrain, [1,2]);
-   currentLabel = labels(i);
-   for j = 1 : length(predictions)
-      if j != currentLabel && prediction 
-   end
+while (changeMade == false) 
+   for i = 1 : 5000
+       predictions = zeros(10);
+       currentImage = digitImagesArray(:,:,i);
+       currentImage = repmat(currentImage, [1, 1, 10]);
+       weightTrain = currentImage .* weight;
+       predictions = sum(weightTrain, [1,2]);
+       currentLabel = labels(i);
+       for j = 1 : length(predictions)
+          if j ~= currentLabel && predictions(j) >= 0 
+              %have to adjust weight here since its supposed to be negative
+              %when false
+              %in slides they substract the weight by -1 but here we subtract
+              %by learning rate
+              weight(i,:,j) = weight(i,j,:) - learningRate;
+              changeMade = true;
+          elseif j == currentLabel && predictions(j) < 0 
+              %have to adjust weight
+              %supposed to be positive when number is true 
+              weight(i,:,j) = weight(i,j,:) + learningRate;
+              changeMade = true;
+          end 
+       end
+   end 
 end
