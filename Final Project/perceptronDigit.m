@@ -22,7 +22,7 @@ end
 %% train perceptron 
 %weight = zeros(28*28 + 1,10);
 weight = rand(28*28 + 1, 10);
-learningRate = 0.01;
+learningRate = 10;
 changeMade = true;
 counter = 0;
 
@@ -35,8 +35,8 @@ while (changeMade == true)
        currentImage = ones(28*28 + 1, 1);
        currentImage(2:end) = reshape(digitImagesArray(:,:,i), [28*28,1]);
        currentImage = repmat(currentImage, [1, 10]);
-       weightTrain = currentImage .* weight;
-       predictions = sum(weightTrain);
+       z = currentImage .* weight;
+       predictions = sum(z);
        currentLabel = zeros(1, 10);
        currentLabel(labels(i) + 1) = 1;
        normalizedPredictions = predictions > 0;
@@ -51,12 +51,12 @@ while (changeMade == true)
 end
 writematrix(weight, "perceptronWeights.csv");
 %% test perceptron
-weight = csvread("perceptronWeights.csv");
+weight = csvread("perceptronWeightsA.csv");
 digitValidationFile = fopen("digitdata/validationimages", "r");
 digitValidationLabelFile = fopen("digitdata/validationlabels", "r");
 validationLabels = fscanf(digitValidationLabelFile, "%d");
 line = fgetl(digitValidationFile)
-digitImagesArray = zeros(28,28,5000);
+digitImagesArray = zeros(28,28,1000);
 imageCounter = 1;
 increment = 1;
 currentDigitImage = zeros(28,28);
@@ -72,3 +72,18 @@ while(ischar(line))
     end
     line = fgetl(digitValidationFile);
 end
+
+results = zeros(1,1000);
+
+for i = 1 : 1000
+       predictions = zeros(1,10);
+       currentImage = ones(28*28 + 1, 1);
+       currentImage(2:end) = reshape(digitImagesArray(:,:,i), [28*28,1]);
+       currentImage = repmat(currentImage, [1, 10]);
+       z = currentImage .* weight;
+       predictions = sum(z);
+       [~, predictedDigit] = max(predictions);
+       predictedDigit = predictedDigit - 1;
+       results(i) = validationLabels(i) == predictedDigit;
+end
+accuracy = mean(results)
