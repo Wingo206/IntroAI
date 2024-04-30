@@ -28,8 +28,10 @@ end
 %=10, acc = 0.7960, trainacc =0.8970, stagnated
 %*D epochs = 1059, lambda = 0, 3 min, learning rate = 1, hiddenLayerNodes
 %=10, acc = 0.8190, trainacc =0.9278, stagnated
-lambda = 0;
-learningRate = 5;
+%*E adaptive, epochs = 1047, lambda = 0.01, 5 min, learning rate = 1,
+%hiddenLayerNodes = 10, acc 0.8680, trainacc = 0.9106
+lambda = 0.01;
+learningRate = 1;
 hiddenLayerNodes = 10;
 outputLayerNodes = 10;
 inputLayerNodes = 28*28;
@@ -41,7 +43,7 @@ epochCounter = 0;
 
 %%for i = 1:epochs
 prevAccs = zeros(1, 10);
-while totalCost > 0.01 
+while learningRate > 0.001 
    totalCost = 0;
    grad1 = zeros(inputLayerNodes + 1, hiddenLayerNodes);
    grad2 = zeros(hiddenLayerNodes + 1, outputLayerNodes);
@@ -93,9 +95,15 @@ while totalCost > 0.01
    epochCounter = epochCounter + 1;
    disp(epochCounter);
    disp(totalCost);
+   disp(learningRate);
    trainingAcc = numCorrect / 5000
    
    % adaptive learning rate
+   prevAccs(mod(epochCounter, length(prevAccs)) + 1) = trainingAcc;
+   if trainingAcc < mean(prevAccs) + 0.01
+      learningRate = learningRate * 0.75
+      prevAccs = zeros(1, 10);
+   end
 end
 
 writematrix(weight1, "NNweight1_100.csv");
