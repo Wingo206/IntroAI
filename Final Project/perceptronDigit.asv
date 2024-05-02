@@ -54,11 +54,11 @@ writematrix(weight, "perceptronWeights.csv");
 weight = csvread("perceptronWeights100A.csv");
 digitValidationFile = fopen("digitdata/validationimages", "r");
 digitValidationLabelFile = fopen("digitdata/validationlabels", "r");
-digitTestFile = fopen("digitdata/testimages", "r");
-digitTestLabelFile = fopen("digitdata/testlabels", "r");
+digitValidationFile = fopen("digitdata/testimages", "r");
+digitValidationLabelFile = fopen("digitdata/testlabels", "r");
 
 [digitImagesArray, validationLabels] = imageFileToMatrix(digitValidationFile, digitValidationLabelFile);
-[digitImagesArray2, validationLabels2] = imageFileToMatrix(digitTestFile, digitTestLabelFile);
+[digitImagesArray, validationLabels] = imageFileToMatrix(digitValidationFile, digitValidationLabelFile);
 
 results = zeros(1,1000);
 
@@ -76,7 +76,7 @@ end
 
 accuracy = mean(results)
 
-[predicted, real] = singleTest(digitImagesArray2, weight, validationLabels2, 1)
+[predicted, real] = singleTest(digitImagesArray, weight, validationLabels, 899)
 
 function [predicted, real] = singleTest(digitImagesArray, weight, validationLabels, image)
        predictions = zeros(1,10);

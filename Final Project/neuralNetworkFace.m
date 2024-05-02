@@ -22,9 +22,11 @@ end
 %% train neural network
 %*A lambda = 0.01, 15 min, learning rate = 0.01, hiddenLayerNodes = 100,
 %acc = 0.5490
+%NEED LOSS FUNCTION FOR PERCEPTRON?
+%ALSO HAVE WAY TO TEST INDIVIDUAL IMAGES 
 lambda = 0.01;
-learningRate = 0.1;
-hiddenLayerNodes = 50;
+learningRate = 0.01;
+hiddenLayerNodes = 10;
 outputLayerNodes = 1;
 inputLayerNodes = 70*60;
 epochs = 100;
