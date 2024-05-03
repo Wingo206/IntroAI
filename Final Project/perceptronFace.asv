@@ -22,10 +22,8 @@ end
 %% train perceptron 
 %weight = zeros(70*60 + 1, 1);
 %100A, learningrate 1, 0.8738 
-%100B, learningrate 0.1, 0.8771
-%100C, learningrate 10, 0.8870
 weight = rand(70*60 + 1, 1);
-learningRate = 10;
+learningRate = 1;
 changeMade = true;
 counter = 0;
 
@@ -51,9 +49,9 @@ while (changeMade == true)
    end 
       disp(counter);
 end
-writematrix(weight, "perceptronWeightsFace100C.csv");
+writematrix(weight, "perceptronWeightsFace100A.csv");
 %% test perceptron
-weight = csvread("perceptronWeightsFace100C.csv");
+weight = csvread("perceptronWeightsFace100A.csv");
 faceValidationFile = fopen("facedata/facedatavalidation", "r");
 faceValidationLabelFile = fopen("facedata/facedatavalidationlabels", "r");
 faceTestFile = fopen("facedata/facedatatest", "r");

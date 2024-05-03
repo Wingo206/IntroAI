@@ -21,15 +21,18 @@ while(ischar(line))
 end
 %% train perceptron 
 %weight = zeros(28*28 + 1,10);
+%100A - full run, 0.01 learnning rate, 15 min? 
+%100B - full run, 1 learning rate?, 10 min?
+%100C - 300 epoch, learning rate 1, 30 sec, 0.8210
 weight = rand(28*28 + 1, 10);
-learningRate = 10;
+learningRate = 1;
 changeMade = true;
 counter = 0;
+epochCounter = 0;
 
 while (changeMade == true)
    changeMade = false;
    counter = 0;
-   disp("hi:");
    for i = 1 : 5000
        predictions = zeros(1,10);
        currentImage = ones(28*28 + 1, 1);
@@ -48,10 +51,11 @@ while (changeMade == true)
        counter = counter + currentChangeMade;
    end 
       disp(counter);
+      epochCounter = epochCounter + 1
 end
-writematrix(weight, "perceptronWeights.csv");
+writematrix(weight, "perceptronWeightsDigit.csv");
 %% test perceptron
-weight = csvread("perceptronWeights100A.csv");
+weight = csvread("perceptronWeightsDigit100C.csv");
 digitValidationFile = fopen("digitdata/validationimages", "r");
 digitValidationLabelFile = fopen("digitdata/validationlabels", "r");
 digitTestFile = fopen("digitdata/testimages", "r");
@@ -76,7 +80,8 @@ end
 
 accuracy = mean(results)
 
-[predicted, real] = singleTest(digitImagesArray2, weight, validationLabels2, 33)
+%change last number for single Testing 
+[predicted, real] = singleTest(digitImagesArray2, weight, validationLabels2, 10)
 
 function [predicted, real] = singleTest(digitImagesArray, weight, validationLabels, image)
        predictions = zeros(1,10);

@@ -23,12 +23,18 @@ end
 %*A lambda = 0.01, 15 min, learning rate = 0.01, hiddenLayerNodes = 100,
 %acc = 0.5490
 %NEED LOSS FUNCTION FOR PERCEPTRON?
-%ALSO HAVE WAY TO TEST INDIVIDUAL IMAGES
-%FIX NN FACE 
 %ADD WAY TO TEST PERCENTAGE OF DATA
-%GRAPH ALL THE ACCURACIES FOR DIFFERENT AMOUNT OF DATA USED 
+%GRAPH ALL THE ACCURACIES FOR DIFFERENT PERCENTAGES OF DATA USED 
+%run multiple times for average on GRAPH  
 %WRITE STUFF FOR REPORT GRAPH, EXPLAIN HOW IT WORK 
 %THATS IT
+
+%*100A, epochs = 300, lambda = 0.1, learningRate = 0.1, hiddenLayer = 20, trainacc = 0.9911,
+%acc = 0.8970
+%*100B, epochs = 395, lambda = 0.1, learningRate = 0.1, hiddenLayer = 10,
+%trainacc = 0.9867, acc = 0.8804
+%*100C, epochs = 370, lambda = 0.1, learningRate = 0.1, hiddenLayer = 20,
+%trainacc = 0.9823, acc = 0.8704
 lambda = 0.1;
 learningRate = 0.1;
 hiddenLayerNodes = 20;
@@ -107,28 +113,16 @@ end
 writematrix(weight1, "NNweight1_100_face.csv");
 writematrix(weight2, "NNweight2_100_face.csv");
 %% Test Neural Network
-weight1 = csvread("NNweight1_100_face.csv");
-weight2 = csvread("NNweight2_100_face.csv");
+weight1 = csvread("NNweight1_100_face_C.csv");
+weight2 = csvread("NNweight2_100_face_C.csv");
 faceValidationFile = fopen("facedata/facedatavalidation", "r");
 faceValidationLabelFile = fopen("facedata/facedatavalidationlabels", "r");
-validationLabels = fscanf(faceValidationLabelFile, "%d");
-line = fgetl(faceValidationFile)
-faceImagesArray = zeros(70,60,301);
-imageCounter = 1;
-increment = 1;
-currentFaceImage = zeros(70,60);
+faceTestFile = fopen("facedata/facedatatest", "r");
+faceTestLabelFile = fopen("facedata/facedatatestlabels", "r");
 
-while(ischar(line))
-    currentFaceImage(increment,:) = 1*(line == 35);
-    increment = increment + 1;
-    if (increment > 70)
-        faceImagesArray(:,:,imageCounter) = currentFaceImage;
-        imageCounter = imageCounter + 1;
-        increment = 1;
-        currentFaceImage = zeros(70,60);
-    end
-    line = fgetl(faceValidationFile);
-end
+[faceImagesArray, validationLabels] = imageFileToMatrix(faceValidationFile, faceValidationLabelFile);
+[faceImagesArray2, validationLabels2] = imageFileToMatrix(faceTestFile, faceTestLabelFile);
+
 
 results = zeros(1,301);
 
@@ -151,3 +145,45 @@ for i = 1 : 301
        results(i) = validationLabels(i) == normalizedPredictions;
 end
 accuracy = mean(results)
+
+[predicted, real] = singleTest(faceImagesArray2, validationLabels2, weight1, weight2, inputLayerNodes, hiddenLayerNodes, outputLayerNodes, 76)
+
+function [predicted, real] = singleTest(faceImagesArray, validationLabels, weight1, weight2, inputLayerNodes, hiddenLayerNodes, outputLayerNodes, image)
+       %forward feed
+       a0flip = ones(inputLayerNodes + 1, 1);
+       a0flip(2:end) = reshape(faceImagesArray(:,:,image), [70*60,1]);
+       a0flipRep = repmat(a0flip, [1, hiddenLayerNodes]);
+       zs1 = weight1 .* a0flipRep;
+       z1 = sum(zs1);
+       a1 = (1 + exp(-z1)).^-1;
+       a1flip = ones(hiddenLayerNodes + 1, 1);
+       a1flip(2:end) = a1';
+       a1flipRep = repmat(a1flip, [1, outputLayerNodes]);
+       zs2 = weight2 .* a1flipRep;
+       z2 = sum(zs2);
+       a2 = (1 + exp(-z2)).^-1;
+       
+       predicted = a2 > 0.5;
+       real = validationLabels(image);
+end
+
+function [outputArray, validationLabels] = imageFileToMatrix(testingFileImage, testingFileLabels)
+   line = fgetl(testingFileImage)
+   faceImagesArray = zeros(70,60,301);
+   imageCounter = 1;
+   increment = 1;
+   currentFaceImage = zeros(70,60);
+    while(ischar(line))
+        currentFaceImage(increment,:) = (line == 43) + 2*(line == 35);
+        increment = increment + 1;
+        if (increment > 70)
+            faceImagesArray(:,:,imageCounter) = currentFaceImage;
+            imageCounter = imageCounter + 1;
+            increment = 1;
+            currentFaceImage = zeros(70,60);
+        end
+        line = fgetl(testingFileImage);
+    end
+    outputArray = faceImagesArray;
+    validationLabels = fscanf(testingFileLabels, "%d");
+end

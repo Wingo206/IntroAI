@@ -141,23 +141,14 @@ for i = 1 : 1000
 end
 accuracy = mean(results)
 
-[predicted, real] = singleTest(digitImagesArray2, validationLabels2, weight1, weight2, inputLayerNodes, hiddenLayerNodes, outputLayerNodes, 356)
-
-function [predicted, real] = singleTest(digitImagesArray, validationLabels, weight1, weight2, inputLayerNodes, hiddenLayerNodes, outputLayerNodes, image)
-       %forward feed
-       a0flip = ones(inputLayerNodes + 1, 1);
-       a0flip(2:end) = reshape(digitImagesArray(:,:,image), [28*28,1]);
-       a0flipRep = repmat(a0flip, [1, hiddenLayerNodes]);
-       zs1 = weight1 .* a0flipRep;
-       z1 = sum(zs1);
-       a1 = (1 + exp(-z1)).^-1;
-       a1flip = ones(hiddenLayerNodes + 1, 1);
-       a1flip(2:end) = a1';
-       a1flipRep = repmat(a1flip, [1, outputLayerNodes]);
-       zs2 = weight2 .* a1flipRep;
-       z2 = sum(zs2);
-       a2 = (1 + exp(-z2)).^-1;
-       [~, predictedDigit] = max(a2);
+function [predicted, real] = singleTest(digitImagesArray, validationLabels, weight1, weight2, , image)
+       predictions = zeros(1,10);
+       currentImage = ones(28*28 + 1, 1);
+       currentImage(2:end) = reshape(digitImagesArray(:,:,image), [28*28,1]);
+       currentImage = repmat(currentImage, [1, 10]);
+       z = currentImage .* weight;
+       predictions = sum(z);
+       [~, predictedDigit] = max(predictions);
        predicted = predictedDigit - 1;
        real = validationLabels(image);
 end
