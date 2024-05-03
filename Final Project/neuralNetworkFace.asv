@@ -29,9 +29,9 @@ end
 %GRAPH ALL THE ACCURACIES FOR DIFFERENT AMOUNT OF DATA USED 
 %WRITE STUFF FOR REPORT GRAPH, EXPLAIN HOW IT WORK 
 %THATS IT
-lambda = 0.1;
-learningRate = 0.1;
-hiddenLayerNodes = 20;
+lambda = 1;
+learningRate = 1;
+hiddenLayerNodes = 10;
 outputLayerNodes = 1;
 inputLayerNodes = 70*60;
 epochs = 100;
@@ -110,7 +110,7 @@ writematrix(weight2, "NNweight2_100_face.csv");
 weight1 = csvread("NNweight1_100_face.csv");
 weight2 = csvread("NNweight2_100_face.csv");
 faceValidationFile = fopen("facedata/facedatavalidation", "r");
-faceValidationLabelFile = fopen("facedata/facedatavalidationlabels", "r");
+faceValidationLabelFile = fopen("facedata/facedatatrainlabels", "r");
 validationLabels = fscanf(faceValidationLabelFile, "%d");
 line = fgetl(faceValidationFile)
 faceImagesArray = zeros(70,60,301);

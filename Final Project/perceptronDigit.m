@@ -76,7 +76,7 @@ end
 
 accuracy = mean(results)
 
-[predicted, real] = singleTest(digitImagesArray2, weight, validationLabels2, 1)
+[predicted, real] = singleTest(digitImagesArray2, weight, validationLabels2, 33)
 
 function [predicted, real] = singleTest(digitImagesArray, weight, validationLabels, image)
        predictions = zeros(1,10);
