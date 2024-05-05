@@ -21,7 +21,7 @@ for t = 1:5
 tic;
 
 weight = rand(70*60 + 1, 1);
-learningRate = 10;
+learningRate = 1;
 changeMade = true;
 counter = 0;
 
@@ -47,8 +47,6 @@ while (changeMade == true)
    end 
       disp(counter);
 end
-writematrix(weight, "perceptronWeightsFace100.csv");
-
 trialTimes(t,1) = toc;
 trialWeights(:,:,t) = weight;
 
@@ -56,13 +54,14 @@ end
 mean_weight = mean(trialWeights, 3);
 
 totalTrialWeights(:,:,k) = reshape(mean_weight, [4201, 1, 1]);
+writematrix(totalTrialWeights(:,:,k), "perceptronWeightsFace" + (0.1*k) + ".csv");
 totalTrialTimes(k,1) = mean(trialTimes);
 
 end
 %% test perceptron
 
 %change this weight to best one before demo time to show them results 
-weight = csvread("perceptronWeightsFace100.csv");
+weight = csvread("perceptronWeightsFace1.csv");
 faceValidationFile = fopen("facedata/facedatavalidation", "r");
 faceValidationLabelFile = fopen("facedata/facedatavalidationlabels", "r");
 faceTestFile = fopen("facedata/facedatatest", "r");
@@ -97,7 +96,7 @@ trialAccuracices = zeros(5,1);
     totalTrialAccuracies(k,1) = mean(trialAccuracices);
 end
 
-[predicted, real] = singleTest(faceImagesArray2, weight, validationLabels2, 1)
+[predicted, real] = singleTest(faceImagesArray2, weight, validationLabels2, 100)
 %% Graphing Data
 totalPercentages = 0.1:0.1:1;
 
@@ -107,8 +106,8 @@ y = totalTrialAccuracies;
 % Plot 1
 plot(x, y, 'b-', 'LineWidth', 2); 
 xlabel('Percentages of Training Data Used');
-ylabel('Average Accuracy');
-title('Accuracy vs Percentages (5 trials each)'); 
+ylabel('Average Accuracy (5 trials)');
+title('Accuracy vs Percentages'); 
 grid on; 
 
 figure
@@ -119,8 +118,8 @@ y = totalTrialTimes;
 % Plot 2
 plot(x, y, 'b-', 'LineWidth', 2); 
 xlabel('Percentages of Training Data Used');
-ylabel('Average Time in ms');
-title('Time vs Percentages (5 trials each)'); 
+ylabel('Average Time in s (5 trials)');
+title('Time vs Percentages'); 
 grid on; 
 
 figure
@@ -131,7 +130,7 @@ y = totalTrialStd;
 % Plot 3
 plot(x, y, 'b-', 'LineWidth', 2); 
 xlabel('Percentages of Training Data Used');
-ylabel('Standard deviation over 5 trials ');
+ylabel('Standard deviation (5 trials) ');
 title('Std vs Percentages'); 
 grid on; 
 %10^-15
@@ -175,7 +174,7 @@ function [predicted, real] = singleTest(faceImagesArray, weight, validationLabel
        real = validationLabels(image);
 end
 
-%Function for loading teting data
+%Function for loading testing data
 function [outputArray, validationLabels] = imageFileToMatrix(testingFileImage, testingFileLabels)
 
    line = fgetl(testingFileImage)

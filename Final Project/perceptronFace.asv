@@ -134,7 +134,8 @@ xlabel('Percentages of Training Data Used');
 ylabel('Standard deviation over 5 trials ');
 title('Std vs Percentages'); 
 grid on; 
-ylim([0 0.00001]);
+%10^-15
+ylim([0 0.000000000000001]);
 
 %% Functions 
 
