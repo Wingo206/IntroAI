@@ -25,20 +25,20 @@ totalTrialWeights2 = zeros(hiddenLayerNodes + 1, outputLayerNodes, 10);
 
 prevAccs = zeros(1, 10);
 
-for k = 1:10
+for k = 10:10
     disp("PERCENTAGE: " + 0.1*(k));
    [digitImagesArray, labels] = loadTrain((0.1*(k)), 5000);
-    trialWeights1 = zeros(inputLayerNodes+1,hiddenLayerNodes, 5);
-    trialWeights2 = zeros(hiddenLayerNodes + 1, outputLayerNodes, 5);
+    trialWeights1 = zeros(inputLayerNodes+1,hiddenLayerNodes, 2);
+    trialWeights2 = zeros(hiddenLayerNodes + 1, outputLayerNodes, 2);
     trialTimes = zeros(5,1);
     numberOfImages = round(0.1*(k)*5000);
 
-    for t =1:5
+    for t =1:2
         disp("TRIAL: " + (t));
         tic;
         
         learningRate = 1;
-        epochs = 600;
+        epochs = 400;
         weight1 = 2*rand(inputLayerNodes + 1, hiddenLayerNodes)-1;
         weight2 = 2*rand(hiddenLayerNodes + 1, outputLayerNodes)-1;
         totalCost = 9999;
@@ -125,8 +125,8 @@ for k = 1:10
 end
 
 %% Test Neural Network
-weight1 = csvread("NNweightsDigit_1_1.csv");
-weight2 = csvread("NNweightsDigit_2_1.csv");
+weight1 = csvread("NNweight1_100E.csv");
+weight2 = csvread("NNweight2_100E.csv");
 digitValidationFile = fopen("digitdata/validationimages", "r");
 digitValidationLabelFile = fopen("digitdata/validationlabels", "r");
 digitTestFile = fopen("digitdata/testimages", "r");
@@ -138,11 +138,11 @@ digitTestLabelFile = fopen("digitdata/testlabels", "r");
 totalTrialAccuracies = zeros(10,1);
 totalTrialStd = zeros(10,1);
 
-for k=1:10
+for k=10:10
     
-trialAccuracices = zeros(5,1);
+trialAccuracices = zeros(2,1);
 
-  for t = 1 : 5
+  for t = 1 : 2
         results = zeros(1,1000);
 
         for i = 1 : 1000
@@ -150,13 +150,13 @@ trialAccuracices = zeros(5,1);
                a0flip = ones(inputLayerNodes + 1, 1);
                a0flip(2:end) = reshape(digitImagesArray(:,:,i), [28*28,1]);
                a0flipRep = repmat(a0flip, [1, hiddenLayerNodes]);
-               zs1 = totalTrialWeights1(:,:,k) .* a0flipRep;
+               zs1 = weight1 .* a0flipRep;
                z1 = sum(zs1);
                a1 = (1 + exp(-z1)).^-1;
                a1flip = ones(hiddenLayerNodes + 1, 1);
                a1flip(2:end) = a1';
                a1flipRep = repmat(a1flip, [1, outputLayerNodes]);
-               zs2 = totalTrialWeights2(:,:,k) .* a1flipRep;
+               zs2 = weight2 .* a1flipRep;
                z2 = sum(zs2);
                a2 = (1 + exp(-z2)).^-1;
                [~, predictedDigit] = max(a2);
