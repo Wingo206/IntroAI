@@ -124,6 +124,19 @@ for k = 10:10
     totalTrialTimes(k,1) = mean(trialTimes);
 end
 
+%% test neural network digit for demo
+weight1 = csvread("NNweight1_100E.csv");
+weight2 = csvread("NNweight2_100E.csv");
+digitTestFile = fopen("digitdata/testimages", "r");
+digitTestLabelFile = fopen("digitdata/testlabels", "r");
+
+hiddenLayerNodes = 10;
+outputLayerNodes = 10;
+inputLayerNodes = 28*28;
+
+[digitImagesArray2, validationLabels2] = imageFileToMatrix(digitTestFile, digitTestLabelFile);
+
+[predicted, real] = singleTest(digitImagesArray2, validationLabels2, weight1, weight2, inputLayerNodes, hiddenLayerNodes, outputLayerNodes, 1)
 %% Test Neural Network
 weight1 = csvread("NNweight1_100E.csv");
 weight2 = csvread("NNweight2_100E.csv");

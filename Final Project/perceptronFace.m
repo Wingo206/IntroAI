@@ -58,6 +58,15 @@ writematrix(totalTrialWeights(:,:,k), "perceptronWeightsFace" + (0.1*k) + ".csv"
 totalTrialTimes(k,1) = mean(trialTimes);
 
 end
+%% test perceptron face for demo
+%change this weight to best one before demo time to show them results 
+weight = csvread("perceptronWeightsFace1.csv");
+faceTestFile = fopen("facedata/facedatatest", "r");
+faceTestLabelFile = fopen("facedata/facedatatestlabels", "r");
+
+[faceImagesArray2, validationLabels2] = imageFileToMatrix(faceTestFile, faceTestLabelFile);
+
+[predicted, real] = singleTest(faceImagesArray2, weight, validationLabels2, 1)
 %% test perceptron
 
 %change this weight to best one before demo time to show them results 

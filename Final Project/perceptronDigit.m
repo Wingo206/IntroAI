@@ -62,6 +62,15 @@ for k = 1:10
 
     writematrix(totalTrialWeights(:,:,k), "perceptronWeightsDigit" + (0.1*k) + ".csv");
 end
+%% test perceptron digit for demo
+weight = csvread("perceptronWeightsDigit1.csv");
+digitTestFile = fopen("digitdata/testimages", "r");
+digitTestLabelFile = fopen("digitdata/testlabels", "r");
+
+[digitImagesArray2, validationLabels2] = imageFileToMatrix(digitTestFile, digitTestLabelFile);
+
+
+[predicted, real] = singleTest(digitImagesArray2, weight, validationLabels2, 1)
 %% test perceptron
 weight = csvread("perceptronWeightsDigit1.csv");
 digitValidationFile = fopen("digitdata/validationimages", "r");

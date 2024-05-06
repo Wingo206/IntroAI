@@ -127,7 +127,19 @@ for k = 1:10
 
 end
 
+%% test neural network face for demo
+weight1 = csvread("NNWeightsFace_1_1.csv");
+weight2 = csvread("NNWeightsFace_2_1.csv");
+faceTestFile = fopen("facedata/facedatatest", "r");
+faceTestLabelFile = fopen("facedata/facedatatestlabels", "r");
 
+hiddenLayerNodes = 20;
+outputLayerNodes = 1;
+inputLayerNodes = 70*60;
+
+[faceImagesArray2, validationLabels2] = imageFileToMatrix(faceTestFile, faceTestLabelFile);
+
+[predicted, real] = singleTest(faceImagesArray2, validationLabels2, weight1, weight2, inputLayerNodes, hiddenLayerNodes, outputLayerNodes, 1)
 %% Test Neural Network
 
 %change this weight to best one before demo time to show them results 
